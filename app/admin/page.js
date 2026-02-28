@@ -26,6 +26,7 @@ export default function Admin() {
   const [saving, setSaving] = useState(false);
   const [addingMedia, setAddingMedia] = useState(false);
   const [expanded, setExpanded] = useState({ hero: true });
+  const [contentLang, setContentLang] = useState("en");
   const [mediaPage, setMediaPage] = useState(1);
   const [mediaEdits, setMediaEdits] = useState({});
 
@@ -34,6 +35,21 @@ export default function Admin() {
   const setLandingField = (group, key, value) => dispatch(setLandingState({ ...landing, [group]: { ...landing[group], [key]: value } }));
   const setSettingsField = (group, key, value) => dispatch(setSettingsState({ ...settings, [group]: { ...settings[group], [key]: value } }));
   const toggleGroup = (id) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
+
+  const currentContent = landing?.contentI18n?.[contentLang] || landing?.content || {};
+  const setContentField = (key, value) => {
+    const next = {
+      ...landing,
+      contentI18n: {
+        ...(landing.contentI18n || {}),
+        [contentLang]: {
+          ...(landing.contentI18n?.[contentLang] || landing.content || {}),
+          [key]: value,
+        },
+      },
+    };
+    dispatch(setLandingState(next));
+  };
 
   async function saveLanding() {
     setSaving(true);
@@ -133,7 +149,13 @@ export default function Admin() {
           </div>
 
           <div className="card">
-            <h3>Content Editor (Level-based)</h3>
+            <div className="row langSwitchRow">
+              <h3>Content Editor (Level-based)</h3>
+              <div className="langSwitch">
+                <button type="button" className={`langBtn ${contentLang === "en" ? "active" : ""}`} onClick={() => setContentLang("en")}>English</button>
+                <button type="button" className={`langBtn ${contentLang === "vi" ? "active" : ""}`} onClick={() => setContentLang("vi")}>Tiếng Việt</button>
+              </div>
+            </div>
             {contentGroups.map((g) => (
               <div key={g.id} className="groupCard">
                 <div className="groupHead">
@@ -142,14 +164,14 @@ export default function Admin() {
                 </div>
                 <label className="fieldWrap">
                   <span className="fieldLabel">{g.titleKey} (cấp cao)</span>
-                  <textarea rows={2} value={landing.content[g.titleKey] || ""} onChange={(e) => setLandingField("content", g.titleKey, e.target.value)} />
+                  <textarea rows={2} value={currentContent[g.titleKey] || ""} onChange={(e) => setContentField(g.titleKey, e.target.value)} />
                 </label>
                 {expanded[g.id] && (
                   <div className="grid2">
                     {g.children.map((k) => (
                       <label key={k} className="fieldWrap">
                         <span className="fieldLabel">{k}</span>
-                        <textarea rows={3} value={landing.content[k] || ""} onChange={(e) => setLandingField("content", k, e.target.value)} />
+                        <textarea rows={3} value={currentContent[k] || ""} onChange={(e) => setContentField(k, e.target.value)} />
                       </label>
                     ))}
                   </div>
@@ -159,7 +181,7 @@ export default function Admin() {
             <button className={`btn ${saving ? "loading" : ""}`} onClick={saveLanding} disabled={saving}>Save Landing</button>
           </div>
 
-          <div className="card" style={{ borderColor: t.primaryColor }}><h3>Live Preview</h3><div className="previewBox" style={{ fontFamily: t.fontFamily, color: t.textColor, background: t.bgColor }}><h2>{landing.content.title}</h2><p>{landing.content.subtitle}</p><button className="btn" style={{ background: t.primaryColor }}>{landing.content.cta}</button></div></div>
+          <div className="card" style={{ borderColor: t.primaryColor }}><h3>Live Preview ({contentLang.toUpperCase()})</h3><div className="previewBox" style={{ fontFamily: t.fontFamily, color: t.textColor, background: t.bgColor }}><h2>{currentContent.title || ""}</h2><p>{currentContent.subtitle || ""}</p><button className="btn" style={{ background: t.primaryColor }}>{currentContent.cta || "CTA"}</button></div></div>
         </>}
 
         {active === "seo" && <div className="card"><h3>SEO Metadata</h3><div className="grid2">{Object.entries(settings.seo).filter(([k]) => !k.toLowerCase().includes("image")).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><textarea rows={3} value={v} onChange={(e) => setSettingsField("seo", k, e.target.value)} /></label>)}</div><div className="grid2"><ImageField label="ogImage" mediaType="image" value={settings.seo.ogImage || ""} onChange={(v) => setSettingsField("seo", "ogImage", v)} /><ImageField label="socialPreviewImage" mediaType="image" value={settings.seo.socialPreviewImage || ""} onChange={(v) => setSettingsField("seo", "socialPreviewImage", v)} /></div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save SEO</button></div>}

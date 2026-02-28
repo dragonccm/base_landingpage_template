@@ -48,7 +48,7 @@ export default function Home() {
 
   if (loading || !landing || !settings) return <main className="landing"><div className="container"><div className="skeleton lg" /><div className="skeleton" /><div className="skeleton" /></div></main>;
 
-  const t = landing.theme, c = landing.content, i = settings.identity;
+  const t = landing.theme, c = (landing.contentI18n?.en || landing.content), i = settings.identity;
   const companyName = i.siteTitle || "TrustXLabs";
   const heroPrefix = c.titlePrefix || "Welcome to";
   const heroHighlight = c.titleHighlight || `${companyName}!`;
