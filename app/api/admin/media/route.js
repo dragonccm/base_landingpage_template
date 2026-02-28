@@ -9,7 +9,8 @@ export async function POST(req) {
   const body = await req.json();
   if (!body?.url) return NextResponse.json({ error: "Missing url" }, { status: 400 });
   const media = await getMedia();
-  const item = { id: `m_${crypto.randomUUID()}`, url: body.url, name: body.name || "Untitled", alt: body.alt || "", createdAt: new Date().toISOString() };
+  const byExt = /\.(mp4|webm|mov)$/i.test(body.url) ? "video" : "image";
+  const item = { id: `m_${crypto.randomUUID()}`, url: body.url, name: body.name || "Untitled", alt: body.alt || "", type: body.type || byExt, createdAt: new Date().toISOString() };
   media.unshift(item);
   await saveMedia(media);
   return NextResponse.json({ ok: true, item });

@@ -53,6 +53,9 @@ export default function Home() {
   const heroPrefix = c.titlePrefix || "Welcome to";
   const heroHighlight = c.titleHighlight || `${companyName}!`;
   const subtitleHtml = (c.subtitle || "").replaceAll("TrustXLabs", companyName);
+  const heroVideoUrl = c.heroVideoUrl || "/videos/GettyImages-1308346105.mp4";
+  const footerBgImageUrl = c.footerBgImageUrl || "/images/Background-footer.png";
+
   const navs = [
     { label: c.nav1, href: "#hero" },
     { label: c.nav2, href: "#goals" },
@@ -68,7 +71,7 @@ export default function Home() {
   const stats = [[c.stat1Value, c.stat1Label], [c.stat2Value, c.stat2Label], [c.stat3Value, c.stat3Label], [c.stat4Value, c.stat4Label]];
 
   return (
-    <main className="landing" style={{ "--primary": t.primaryColor, "--secondary": t.secondaryColor, "--txt": t.textColor, "--muted": t.mutedColor, "--bg": t.bgColor, "--badgeFrom": t.badgeBorderFrom, "--badgeTo": t.badgeBorderTo, "--iconFrom": t.iconGradFrom, "--iconTo": t.iconGradTo, "--titleGradFrom": t.titleGradFrom, "--titleGradTo": t.titleGradTo, "--navText": t.navTextColor, "--focusBg": t.focusBg, "--sectionBg": t.sectionBg, "--cardBorder": t.cardBorder, "--cardHoverShadow": t.cardHoverShadow, "--statsBg": t.statsBg, "--footerBg": t.footerBg, "--footerText": t.footerText, "--heroOverlayFrom": t.heroOverlayFrom, "--heroOverlayTo": t.heroOverlayTo, fontFamily: t.fontFamily }}>
+    <main className="landing" style={{ "--primary": t.primaryColor, "--secondary": t.secondaryColor, "--txt": t.textColor, "--muted": t.mutedColor, "--bg": t.bgColor, "--badgeFrom": t.badgeBorderFrom, "--badgeTo": t.badgeBorderTo, "--iconFrom": t.iconGradFrom, "--iconTo": t.iconGradTo, "--titleGradFrom": t.titleGradFrom, "--titleGradTo": t.titleGradTo, "--navText": t.navTextColor, "--focusBg": t.focusBg, "--sectionBg": t.sectionBg, "--cardBorder": t.cardBorder, "--cardHoverShadow": t.cardHoverShadow, "--statsBg": t.statsBg, "--footerBg": t.footerBg, "--footerText": t.footerText, "--footerBgImage": `url('${footerBgImageUrl}')`, "--heroOverlayFrom": t.heroOverlayFrom, "--heroOverlayTo": t.heroOverlayTo, fontFamily: t.fontFamily }}>
       <header className="stickyHeader">
         <div className="l-header container">
           <div className="l-logoWrap">{i.logoUrl ? <img src={i.logoUrl} alt="logo" className="l-logo" /> : <div className="logoFallback">N</div>}</div>
@@ -79,7 +82,7 @@ export default function Home() {
       </header>
 
       <section id="hero" className="l-hero reveal">
-        <video className="heroVideo" autoPlay muted loop playsInline preload="metadata"><source src="/videos/GettyImages-1308346105.mp4" type="video/mp4" /></video>
+        <video className="heroVideo" autoPlay muted loop playsInline preload="metadata"><source src={heroVideoUrl} type="video/mp4" /></video>
         <div className="heroOverlay" />
         <div className="heroNet" />
         <div className="container heroInner">
