@@ -47,6 +47,9 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 .editorToolbar{display:flex;gap:8px;margin-bottom:8px}.editorToolbar button{border:1px solid #d8d8d8;background:#fff;border-radius:8px;padding:8px 10px;cursor:pointer}
 .previewBox{padding:14px;border-radius:12px;border:1px dashed #dab772}.previewBox h2{margin:0 0 8px}
 .mediaGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.mediaGrid img{width:100%;height:130px;object-fit:cover;border-radius:10px}
+.groupCard{border:1px solid #ececec;border-radius:12px;padding:12px;margin-bottom:12px;background:#fff}
+.groupHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ghostBtn{background:#fff;color:#75323c;border:1px solid #d8c0c4}
 .fieldWrap{display:block}.fieldLabel{display:block;font-weight:800;margin-bottom:20px;color:#171717}
 .colorPickWrap{display:grid;grid-template-columns:30px 54px 1fr;gap:10px;align-items:center}.colorSwatch{display:block;width:30px;height:30px;border-radius:6px;border:1px solid #bbb}
 .imageField{margin-bottom:14px}.dropzone{border:1px dashed #c9c9c9;border-radius:12px;padding:12px;transition:.15s}.dropzone.dragging{border-color:#75323c;background:#fff8f9}

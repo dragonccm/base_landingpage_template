@@ -7,17 +7,30 @@ import { toast } from "@/lib/toast";
 
 const tabs = ["dashboard", "landing", "seo", "identity", "media"];
 
+const contentGroups = [
+  { id: "hero", label: "Hero Section", titleKey: "title", children: ["heroBadge", "subtitle", "cta", "cta2", "chip1", "chip2", "chip3", "chip4"] },
+  { id: "nav", label: "Navigation", titleKey: "nav1", children: ["nav2", "nav3", "nav4", "nav5", "nav6", "navCta"] },
+  { id: "goals", label: "Goals & Mission", titleKey: "goalsTitle", children: ["goalsSubtitle", "goal1Title", "goal1Desc", "goal2Title", "goal2Desc", "goal3Title", "goal3Desc", "goal4Title", "goal4Desc"] },
+  { id: "functions", label: "Functions", titleKey: "functionsTitle", children: ["function1", "function2", "function3", "function4", "function5"] },
+  { id: "focus", label: "Focus Areas", titleKey: "focusTitle", children: ["focus1Title", "focus1Desc", "focus2Title", "focus2Desc", "focus3Title", "focus3Desc", "focus4Title", "focus4Desc"] },
+  { id: "research", label: "Research", titleKey: "researchTitle", children: ["timeline1Title", "timeline1Desc", "timeline2Title", "timeline2Desc", "timeline3Title", "timeline3Desc", "timeline4Title", "timeline4Desc", "timeline5Title", "timeline5Desc", "stat1Value", "stat1Label", "stat2Value", "stat2Label", "stat3Value", "stat3Label", "stat4Value", "stat4Label"] },
+  { id: "contact", label: "Contact", titleKey: "contactTitle", children: ["formTitle", "firstNamePlaceholder", "lastNamePlaceholder", "emailPlaceholder", "messagePlaceholder", "submitText", "addressTitle", "addressText", "phoneTitle", "phoneText", "supportEmailTitle", "supportEmailText"] },
+  { id: "footer", label: "Footer", titleKey: "footerText", children: ["footerCol2Title", "footerCol2Text", "footerCol3Title", "footerCol3Text", "footerCol4Title", "footerCol4Text"] },
+];
+
 export default function Admin() {
   const dispatch = useDispatch();
   const { landing, settings, media, active, loading } = useSelector((s) => s.admin);
   const [upload, setUpload] = useState({ url: "", name: "", alt: "" });
   const [saving, setSaving] = useState(false);
   const [addingMedia, setAddingMedia] = useState(false);
+  const [expanded, setExpanded] = useState({ hero: true });
 
   useEffect(() => { dispatch(fetchAdminData()); }, [dispatch]);
 
   const setLandingField = (group, key, value) => dispatch(setLandingState({ ...landing, [group]: { ...landing[group], [key]: value } }));
   const setSettingsField = (group, key, value) => dispatch(setSettingsState({ ...settings, [group]: { ...settings[group], [key]: value } }));
+  const toggleGroup = (id) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
   async function saveLanding() {
     setSaving(true);
@@ -80,11 +93,7 @@ export default function Admin() {
                 <label key={k} className="fieldWrap">
                   <span className="fieldLabel">{k}</span>
                   {k.toLowerCase().includes("color") ? (
-                    <div className="colorPickWrap">
-                      <span className="colorSwatch" style={{ background: v }} />
-                      <input type="color" value={v} onChange={(e) => setLandingField("theme", k, e.target.value)} />
-                      <input value={v} onChange={(e) => setLandingField("theme", k, e.target.value)} />
-                    </div>
+                    <div className="colorPickWrap"><span className="colorSwatch" style={{ background: v }} /><input type="color" value={v} onChange={(e) => setLandingField("theme", k, e.target.value)} /><input value={v} onChange={(e) => setLandingField("theme", k, e.target.value)} /></div>
                   ) : <input value={v} onChange={(e) => setLandingField("theme", k, e.target.value)} />}
                 </label>
               ))}
@@ -92,9 +101,29 @@ export default function Admin() {
           </div>
 
           <div className="card">
-            <h3>Content Editor</h3>
-            <div className="editorToolbar"><button type="button" onClick={() => setLandingField("content", "section1", `<strong>${landing.content.section1}</strong>`)}>B</button><button type="button" onClick={() => setLandingField("content", "section1", `<em>${landing.content.section1}</em>`)}>I</button><button type="button" onClick={() => setLandingField("content", "section1", `<p>${landing.content.section1}</p><ul><li>Item</li></ul>`)}>List</button></div>
-            <div className="grid2">{Object.entries(landing.content).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><textarea rows={4} value={v} onChange={(e) => setLandingField("content", k, e.target.value)} /></label>)}</div>
+            <h3>Content Editor (Level-based)</h3>
+            {contentGroups.map((g) => (
+              <div key={g.id} className="groupCard">
+                <div className="groupHead">
+                  <strong>{g.label}</strong>
+                  <button type="button" className="btn ghostBtn" onClick={() => toggleGroup(g.id)}>{expanded[g.id] ? "Ẩn nội dung con" : "Show thêm"}</button>
+                </div>
+                <label className="fieldWrap">
+                  <span className="fieldLabel">{g.titleKey} (cấp cao)</span>
+                  <textarea rows={2} value={landing.content[g.titleKey] || ""} onChange={(e) => setLandingField("content", g.titleKey, e.target.value)} />
+                </label>
+                {expanded[g.id] && (
+                  <div className="grid2">
+                    {g.children.map((k) => (
+                      <label key={k} className="fieldWrap">
+                        <span className="fieldLabel">{k}</span>
+                        <textarea rows={3} value={landing.content[k] || ""} onChange={(e) => setLandingField("content", k, e.target.value)} />
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
             <button className={`btn ${saving ? "loading" : ""}`} onClick={saveLanding} disabled={saving}>Save Landing</button>
           </div>
 
@@ -109,10 +138,7 @@ export default function Admin() {
           <form className="card" onSubmit={addMedia}>
             <h3>Media Manager</h3>
             <ImageField label="Media Image" value={upload.url} onChange={(v) => setUpload({ ...upload, url: v })} />
-            <div className="grid2">
-              <label className="fieldWrap"><span className="fieldLabel">name</span><input value={upload.name} onChange={(e) => setUpload({ ...upload, name: e.target.value })} /></label>
-              <label className="fieldWrap"><span className="fieldLabel">alt</span><input value={upload.alt} onChange={(e) => setUpload({ ...upload, alt: e.target.value })} /></label>
-            </div>
+            <div className="grid2"><label className="fieldWrap"><span className="fieldLabel">name</span><input value={upload.name} onChange={(e) => setUpload({ ...upload, name: e.target.value })} /></label><label className="fieldWrap"><span className="fieldLabel">alt</span><input value={upload.alt} onChange={(e) => setUpload({ ...upload, alt: e.target.value })} /></label></div>
             <button className={`btn ${addingMedia ? "loading" : ""}`} disabled={addingMedia}>{addingMedia ? "Adding..." : "Add Media"}</button>
           </form>
           <div className="mediaGrid">{media.map((m) => <article key={m.id} className="card"><img src={m.url} alt={m.alt || m.name} /><h4>{m.name}</h4><p>{m.alt}</p><button className="btn danger" onClick={() => removeMedia(m.id)}>Delete</button></article>)}</div>
