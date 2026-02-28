@@ -11,10 +11,10 @@ const contentGroups = [
   { id: "hero", label: "Hero Section", titleKey: "title", children: ["heroBadge", "subtitle", "cta", "cta2", "chip1", "chip2", "chip3", "chip4"] },
   { id: "nav", label: "Navigation", titleKey: "nav1", children: ["nav2", "nav3", "nav4", "nav5", "nav6", "navCta"] },
   { id: "goals", label: "Goals & Mission", titleKey: "goalsTitle", children: ["goalsSubtitle", "goal1Title", "goal1Desc", "goal2Title", "goal2Desc", "goal3Title", "goal3Desc", "goal4Title", "goal4Desc"] },
-  { id: "functions", label: "Functions", titleKey: "functionsTitle", children: ["function1", "function2", "function3", "function4", "function5"] },
-  { id: "focus", label: "Focus Areas", titleKey: "focusTitle", children: ["focus1Title", "focus1Desc", "focus2Title", "focus2Desc", "focus3Title", "focus3Desc", "focus4Title", "focus4Desc"] },
+  { id: "functions", label: "Functions", titleKey: "functionsTitle", children: ["function1", "function2", "function3", "function4", "function5", "function6"] },
+  { id: "focus", label: "Focus Areas", titleKey: "focusTitle", children: ["focus1Label", "focus1Title", "focus1Desc", "focus2Label", "focus2Title", "focus2Desc", "focus3Label", "focus3Title", "focus3Desc", "focus4Label", "focus4Title", "focus4Desc"] },
   { id: "research", label: "Research", titleKey: "researchTitle", children: ["timeline1Title", "timeline1Desc", "timeline2Title", "timeline2Desc", "timeline3Title", "timeline3Desc", "timeline4Title", "timeline4Desc", "timeline5Title", "timeline5Desc", "stat1Value", "stat1Label", "stat2Value", "stat2Label", "stat3Value", "stat3Label", "stat4Value", "stat4Label"] },
-  { id: "contact", label: "Contact", titleKey: "contactTitle", children: ["formTitle", "firstNamePlaceholder", "lastNamePlaceholder", "emailPlaceholder", "messagePlaceholder", "submitText", "addressTitle", "addressText", "phoneTitle", "phoneText", "supportEmailTitle", "supportEmailText"] },
+  { id: "contact", label: "Contact", titleKey: "contactTitle", children: ["formTitle", "firstNamePlaceholder", "lastNamePlaceholder", "emailPlaceholder", "messagePlaceholder", "submitText", "addressTitle", "addressText", "phoneTitle", "phoneText", "supportEmailTitle", "supportEmailText", "workTimeTitle", "workTimeText"] },
   { id: "footer", label: "Footer", titleKey: "footerText", children: ["footerCol2Title", "footerCol2Text", "footerCol3Title", "footerCol3Text", "footerCol4Title", "footerCol4Text"] },
 ];
 
