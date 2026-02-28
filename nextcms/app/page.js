@@ -65,15 +65,17 @@ export default function Home() {
         <button className="l-btn hideMobile">{c.navCta}</button>
       </header>
 
-      <section className="container l-hero reveal">
+      <section className="l-hero reveal">
         <video className="heroVideo" autoPlay muted loop playsInline preload="metadata"><source src="/videos/GettyImages-1308346105.mp4" type="video/mp4" /></video>
         <div className="heroOverlay" />
         <div className="heroNet" />
-        <span className="l-badge"><Star size={14} /> {c.heroBadge}</span>
-        <h1>{c.title.replace("TrustXLabs!", "")}<span>TrustXLabs!</span></h1>
-        <p dangerouslySetInnerHTML={{ __html: c.subtitle }} />
-        <div className="l-rowCenter"><button className="l-btn">{c.cta}</button><button className="l-btn ghost">{c.cta2}</button></div>
-        <div className="chipRow">{chips.map((x) => <span key={x}>{x}</span>)}</div>
+        <div className="container heroInner">
+          <span className="l-badge"><Star size={14} /> {c.heroBadge}</span>
+          <h1>{c.title.replace("TrustXLabs!", "")}<span>TrustXLabs!</span></h1>
+          <p dangerouslySetInnerHTML={{ __html: c.subtitle }} />
+          <div className="l-rowCenter"><button className="l-btn">{c.cta}</button><button className="l-btn ghost">{c.cta2}</button></div>
+          <div className="chipRow">{chips.map((x) => <span key={x}>{x}</span>)}</div>
+        </div>
       </section>
 
       <section className="container l-section center reveal">
