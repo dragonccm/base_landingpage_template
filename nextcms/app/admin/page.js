@@ -104,6 +104,14 @@ export default function Admin() {
           </div>
 
           <div className="card">
+            <h3>Media Bindings (Landing)</h3>
+            <div className="grid2">
+              <ImageField label="heroVideoUrl" mediaType="video" value={landing.content.heroVideoUrl || ""} onChange={(v) => setLandingField("content", "heroVideoUrl", v)} />
+              <ImageField label="footerBgImageUrl" mediaType="image" value={landing.content.footerBgImageUrl || ""} onChange={(v) => setLandingField("content", "footerBgImageUrl", v)} />
+            </div>
+          </div>
+
+          <div className="card">
             <h3>Content Editor (Level-based)</h3>
             {contentGroups.map((g) => (
               <div key={g.id} className="groupCard">
@@ -142,11 +150,11 @@ export default function Admin() {
         {active === "media" && <>
           <form className="card" onSubmit={addMedia}>
             <h3>Media Manager</h3>
-            <ImageField label="Media Image" value={upload.url} onChange={(v) => setUpload({ ...upload, url: v })} />
+            <ImageField label="Media File" value={upload.url} mediaType="any" onChange={(v, type) => setUpload({ ...upload, url: v, type: type || upload.type })} />
             <div className="grid2"><label className="fieldWrap"><span className="fieldLabel">name</span><input value={upload.name} onChange={(e) => setUpload({ ...upload, name: e.target.value })} /></label><label className="fieldWrap"><span className="fieldLabel">alt</span><input value={upload.alt} onChange={(e) => setUpload({ ...upload, alt: e.target.value })} /></label></div>
             <button className={`btn ${addingMedia ? "loading" : ""}`} disabled={addingMedia}>{addingMedia ? "Adding..." : "Add Media"}</button>
           </form>
-          <div className="mediaGrid">{media.map((m) => <article key={m.id} className="card"><img src={m.url} alt={m.alt || m.name} /><h4>{m.name}</h4><p>{m.alt}</p><button className="btn danger" onClick={() => removeMedia(m.id)}>Delete</button></article>)}</div>
+          <div className="mediaGrid">{media.map((m) => <article key={m.id} className="card">{(m.type === "video" || /\.(mp4|webm|mov)$/i.test(m.url)) ? <video src={m.url} controls className="mediaThumb" /> : <img src={m.url} alt={m.alt || m.name} className="mediaThumb" />}<h4>{m.name}</h4><p>{m.alt}</p><small>{m.type || "image"}</small><button className="btn danger" onClick={() => removeMedia(m.id)}>Delete</button></article>)}</div>
         </>}
       </section>
     </main>

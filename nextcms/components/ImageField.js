@@ -2,7 +2,11 @@
 import { useRef, useState } from "react";
 import { toast } from "@/lib/toast";
 
-export default function ImageField({ label, value, onChange }) {
+function isVideoUrl(url = "") {
+  return /\.(mp4|webm|mov)$/i.test(url);
+}
+
+export default function ImageField({ label, value, onChange, mediaType = "any" }) {
   const inputRef = useRef(null);
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -16,8 +20,8 @@ export default function ImageField({ label, value, onChange }) {
     const data = await res.json();
     setBusy(false);
     if (!res.ok) return toast.error(data.error || "Upload failed");
-    onChange(data.url);
-    toast.success("Upload ảnh thành công");
+    onChange(data.url, data.type);
+    toast.success(data.type === "video" ? "Upload video thành công" : "Upload ảnh thành công");
   }
 
   function onDrop(e) {
@@ -28,11 +32,14 @@ export default function ImageField({ label, value, onChange }) {
   }
 
   async function onPaste(e) {
-    const item = [...(e.clipboardData?.items || [])].find((i) => i.type.startsWith("image/"));
+    const item = [...(e.clipboardData?.items || [])].find((i) => i.type.startsWith("image/") || i.type.startsWith("video/"));
     if (!item) return;
     const file = item.getAsFile();
     if (file) await uploadFile(file);
   }
+
+  const accept = mediaType === "image" ? "image/*" : mediaType === "video" ? "video/*" : "image/*,video/*";
+  const isVideo = isVideoUrl(value);
 
   return (
     <div className="imageField" onPaste={onPaste}>
@@ -43,17 +50,16 @@ export default function ImageField({ label, value, onChange }) {
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
       >
-        {value ? <img src={value} alt="preview" className="imagePreview" /> : <div className="dropHint">Kéo thả ảnh vào đây / paste từ clipboard</div>}
+        {value ? (
+          isVideo ? <video src={value} className="imagePreview" controls muted /> : <img src={value} alt="preview" className="imagePreview" />
+        ) : (
+          <div className="dropHint">Kéo thả media vào đây / paste từ clipboard</div>
+        )}
         <div className="row">
-          <button type="button" className="btn" onClick={() => inputRef.current?.click()} disabled={busy}>{busy ? "Đang upload..." : "Chọn ảnh"}</button>
-          <input
-            className="urlInput"
-            placeholder="Hoặc dán URL ảnh"
-            value={value || ""}
-            onChange={(e) => onChange(e.target.value)}
-          />
+          <button type="button" className="btn" onClick={() => inputRef.current?.click()} disabled={busy}>{busy ? "Đang upload..." : "Chọn file"}</button>
+          <input className="urlInput" placeholder="Hoặc dán URL ảnh/video" value={value || ""} onChange={(e) => onChange(e.target.value, isVideoUrl(e.target.value) ? "video" : "image")} />
         </div>
-        <input ref={inputRef} type="file" accept="image/*" hidden onChange={(e) => uploadFile(e.target.files?.[0])} />
+        <input ref={inputRef} type="file" accept={accept} hidden onChange={(e) => uploadFile(e.target.files?.[0])} />
       </div>
     </div>
   );

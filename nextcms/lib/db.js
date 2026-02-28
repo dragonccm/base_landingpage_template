@@ -107,6 +107,8 @@ export const defaultLanding = {
     stat4Label: "International partners",
 
     contactTitle: "Connect With TrustXLabs",
+    heroVideoUrl: "/videos/GettyImages-1308346105.mp4",
+    footerBgImageUrl: "/images/Background-footer.png",
     formTitle: "Get In Touch With Us",
     firstNamePlaceholder: "First Name",
     lastNamePlaceholder: "Last Name",
@@ -157,7 +159,10 @@ export const defaultSettings = {
   },
 };
 
-export const defaultMedia = [];
+export const defaultMedia = [
+  { id: "m_hero_video", url: "/videos/GettyImages-1308346105.mp4", name: "Hero Background Video", alt: "", type: "video", createdAt: new Date().toISOString() },
+  { id: "m_footer_bg", url: "/images/Background-footer.png", name: "Footer Background", alt: "", type: "image", createdAt: new Date().toISOString() }
+];
 
 async function upsertKey(key, value) {
   await pool.query(
