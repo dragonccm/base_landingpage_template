@@ -79,9 +79,12 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 .rightInfo .l-card strong{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .map{min-height:200px;border:0;border-radius:12px;width:100%}
 
-.l-footer{margin-top:18px;background:var(--footerBg,#0A0F1E);color:var(--footerText,#cdd9ef);padding:26px 0 0}
-.footCols{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:12px}
-.copy{text-align:center;border-top:1px solid rgba(255,255,255,.1);margin-top:14px;padding:14px 0;color:#98a7c3}
+.l-footer{margin-top:18px;background-color:#09111F;background-image:url('/images/Background-footer.png');background-size:cover;background-position:center;color:var(--footerText,#cdd9ef);padding:32px 0 0}
+.footCols{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:18px}
+.socialRow{display:flex;gap:10px;margin-top:12px}
+.socialIcon{width:34px;height:34px;border-radius:999px;background:rgba(255,255,255,.12);display:grid;place-items:center;color:#fff;border:1px solid rgba(255,255,255,.2)}
+.socialIcon:hover{background:rgba(255,255,255,.2)}
+.copy{text-align:center;border-top:1px solid rgba(255,255,255,.18);margin-top:18px;padding:14px 0;color:#c9d4ea}
 .logoFallback{width:50px;height:50px;border-radius:10px;background:#75323c;color:#fff;display:grid;place-items:center;font-weight:700}
 .reveal{opacity:1;transform:none}
 .reveal.inview{animation:fadeUp .55s ease both}
