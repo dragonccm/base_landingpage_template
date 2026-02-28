@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 import { jwtDecrypt } from "jose";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || "dev-secret");
+function secret() {
+  const raw = process.env.JWT_SECRET || "dev-secret-change-me";
+  const normalized = (raw + "00000000000000000000000000000000").slice(0, 32);
+  return new TextEncoder().encode(normalized);
+}
 
 export async function middleware(req) {
   const token = req.cookies.get("auth_token")?.value;
   if (!token) return NextResponse.redirect(new URL("/login", req.url));
   try {
-    const { payload } = await jwtDecrypt(token, secret);
+    const { payload } = await jwtDecrypt(token, secret());
     if (payload.role !== "admin") return NextResponse.redirect(new URL("/", req.url));
     return NextResponse.next();
   } catch {

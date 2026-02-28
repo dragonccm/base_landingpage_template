@@ -1,16 +1,19 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchLanding, fetchSettings } from "@/store/siteSlice";
 
 export default function Home() {
-  const [landing, setLanding] = useState(null);
-  const [settings, setSettings] = useState(null);
+  const dispatch = useDispatch();
+  const { landing, settings, loading } = useSelector((s) => s.site);
 
   useEffect(() => {
-    fetch("/api/landing").then((r) => r.json()).then((d) => setLanding(d.data));
-    fetch("/api/settings").then((r) => r.json()).then((d) => setSettings(d.data));
-  }, []);
+    dispatch(fetchLanding());
+    dispatch(fetchSettings());
+  }, [dispatch]);
 
-  if (!landing || !settings) return <main className="pageWrap"><div className="skeleton lg" /><div className="skeleton" /><div className="skeleton" /></main>;
+  if (loading || !landing || !settings)
+    return <main className="pageWrap"><div className="skeleton lg" /><div className="skeleton" /><div className="skeleton" /></main>;
 
   const t = landing.theme;
   const c = landing.content;
@@ -21,18 +24,13 @@ export default function Home() {
       <header className="publicHeader card" style={{ borderColor: t.primaryColor }}>
         <div className="row">
           {i.logoUrl ? <img src={i.logoUrl} alt="logo" className="logoPreview" /> : <div className="logoFallback">N</div>}
-          <div>
-            <h2>{i.siteTitle}</h2>
-            <p>{i.siteTagline}</p>
-          </div>
+          <div><h2>{i.siteTitle}</h2><p>{i.siteTagline}</p></div>
         </div>
         <div className="row"><a href="/login">Login</a><a href="/admin">Admin</a></div>
       </header>
 
       <section className="card" style={{ borderColor: t.secondaryColor }}>
-        <h1>{c.title}</h1>
-        <p>{c.subtitle}</p>
-        <button className="btn" style={{ background: t.primaryColor }}>{c.cta}</button>
+        <h1>{c.title}</h1><p>{c.subtitle}</p><button className="btn" style={{ background: t.primaryColor }}>{c.cta}</button>
       </section>
       <section className="card"><h3>Section 1</h3><div className="richOut" dangerouslySetInnerHTML={{ __html: c.section1 }} /></section>
       <section className="card"><h3>Section 2</h3><div className="richOut" dangerouslySetInnerHTML={{ __html: c.section2 }} /></section>

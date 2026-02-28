@@ -1,5 +1,6 @@
 import "./globals.css";
 import { getSettings } from "@/lib/db";
+import Providers from "./providers";
 
 export async function generateMetadata() {
   const settings = await getSettings();
@@ -19,7 +20,7 @@ export async function generateMetadata() {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body><Providers>{children}</Providers></body>
     </html>
   );
 }
