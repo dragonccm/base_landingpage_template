@@ -1,6 +1,6 @@
 *{box-sizing:border-box}body{margin:0;font-family:Lato,Inter,Arial,sans-serif;background:#fff;color:#151515}a{text-decoration:none;color:inherit}
 .container{width:min(1120px,94vw);margin:0 auto}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.btn{border:0;background:#75323c;color:#fff;padding:10px 14px;border-radius:9px;cursor:pointer}.btn.danger{background:#2f2f2f}
+.btn{border:0;background:linear-gradient(135deg,var(--iconFrom,#2B9EDA),var(--iconTo,#1A7EBF));color:#fff;padding:10px 14px;border-radius:9px;cursor:pointer}.btn.danger{background:#2f2f2f}
 input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;background:#fff}
 .btn.loading{position:relative;padding-left:34px;opacity:.9}.btn.loading::before{content:"";position:absolute;left:12px;top:50%;width:12px;height:12px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;transform:translateY(-50%);animation:spin .7s linear infinite}
 @keyframes spin{to{transform:translateY(-50%) rotate(360deg)}}
@@ -20,7 +20,7 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 .l-nav{display:flex;gap:16px;font-size:14px}.l-nav a{color:#364152}
 .l-nav a:hover{color:var(--primary)}
 .hideMobile{display:inline-block}
-.l-btn{border:0;background:var(--primary,#1E6FFF);color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer}
+.l-btn{border:0;background:linear-gradient(135deg,var(--iconFrom,#2B9EDA),var(--iconTo,#1A7EBF));color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer}
 .l-btn.ghost{background:#fff;color:#111;border:1px solid #d7dfe9}
 
 .l-hero{position:relative;text-align:center;padding:72px 0 40px;overflow:hidden;min-height:460px}
@@ -28,7 +28,7 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 .heroVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
 .heroOverlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.58),rgba(243,246,251,.68));z-index:0}
 .heroNet{position:absolute;right:-60px;top:-30px;width:380px;height:240px;background:radial-gradient(circle,#d7ebff 1px,transparent 1px);background-size:18px 18px;opacity:.5;z-index:0}
-.l-badge{display:inline-flex;align-items:center;gap:6px;border:1px solid #97cff3;color:var(--primary);padding:6px 14px;border-radius:999px;font-size:12px;background:#eef4ff;align-self:center}
+.l-badge{display:inline-flex;align-items:center;gap:6px;border:1px solid transparent;color:var(--primary);padding:6px 14px;border-radius:999px;font-size:12px;align-self:center;background:linear-gradient(#eef4ff,#eef4ff) padding-box,linear-gradient(90deg,var(--badgeFrom,#61C9FF),var(--badgeTo,#82D4FF)) border-box}
 .l-hero h1{font-size:66px;line-height:1.04;margin:14px 0 10px;letter-spacing:.2px}
 .l-hero h1 span{color:var(--primary)}
 .l-hero p{max-width:840px;margin:0 auto;color:#606d84;line-height:1.75}
@@ -44,11 +44,14 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 .l-section p{color:#667085}
 .l-grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .l-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.l-card{background:#fff;border:1px solid #b7d8f0;border-radius:12px;padding:16px;text-align:left}
-.iconBox{width:36px;height:36px;border-radius:8px;background:#eef4ff;display:grid;place-items:center;margin-bottom:8px}
+.l-card{background:#fff;border:1px solid #b7d8f0;border-radius:12px;padding:16px;text-align:left;transition:box-shadow .22s ease,transform .22s ease}
+.l-card:hover{box-shadow:4px 4px 14px #1992D242;transform:translateY(-1px)}
+.iconBox{width:52px;height:52px;padding:10px;border-radius:10px;background:linear-gradient(135deg,var(--iconFrom,#2B9EDA),var(--iconTo,#1A7EBF));display:grid;place-items:center;margin-bottom:8px;color:#fff}
 .l-card h3{margin:0 0 8px}
 .l-card small{font-size:11px;color:#5b8fd9;font-weight:700;display:block;margin-bottom:6px}
 
+.focusBand{width:100%;background:var(--focusBg,#EAF1FA);padding:20px 0}
+.focusInner{margin-top:0}
 .split{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;align-items:center}
 .split ul{margin:0;padding-left:18px;color:#4d5a70;line-height:1.8}
 .artBox{height:290px;border-radius:12px;background:linear-gradient(145deg,#d8efff,#c4e2ff);display:grid;place-items:center}

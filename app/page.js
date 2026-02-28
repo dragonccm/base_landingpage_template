@@ -57,7 +57,7 @@ export default function Home() {
   const stats = [[c.stat1Value, c.stat1Label], [c.stat2Value, c.stat2Label], [c.stat3Value, c.stat3Label], [c.stat4Value, c.stat4Label]];
 
   return (
-    <main className="landing" style={{ "--primary": t.primaryColor, "--secondary": t.secondaryColor, "--txt": t.textColor, "--bg": t.bgColor, fontFamily: t.fontFamily }}>
+    <main className="landing" style={{ "--primary": t.primaryColor, "--secondary": t.secondaryColor, "--txt": t.textColor, "--bg": t.bgColor, "--badgeFrom": t.badgeBorderFrom, "--badgeTo": t.badgeBorderTo, "--iconFrom": t.iconGradFrom, "--iconTo": t.iconGradTo, "--focusBg": t.focusBg, fontFamily: t.fontFamily }}>
       <header className="l-header container stickyHeader">
         <div className="l-logoWrap">{i.logoUrl ? <img src={i.logoUrl} alt="logo" className="l-logo" /> : <div className="logoFallback">N</div>}</div>
         <button className="menuToggle" onClick={() => setMenuOpen((v) => !v)}>☰</button>
@@ -88,9 +88,11 @@ export default function Home() {
         <div className="artBox"><div className="diamond" /></div>
       </section>
 
-      <section className="container l-section center reveal">
-        <h2>{c.focusTitle}</h2><p>We focus on four key areas to deliver advanced financial technology solutions.</p>
-        <div className="l-grid2">{focuses.map(([label, title, desc], idx) => { const Icon = focusIcons[idx]; return <article key={title} className="l-card"><small>{label}</small><div className="iconBox"><Icon size={18} /></div><h3>{title}</h3><p>{desc}</p></article>; })}</div>
+      <section className="focusBand reveal">
+        <div className="container l-section center focusInner">
+          <h2>{c.focusTitle}</h2><p>We focus on four key areas to deliver advanced financial technology solutions.</p>
+          <div className="l-grid2">{focuses.map(([label, title, desc], idx) => { const Icon = focusIcons[idx]; return <article key={title} className="l-card"><small>{label}</small><div className="iconBox"><Icon size={22} /></div><h3>{title}</h3><p>{desc}</p></article>; })}</div>
+        </div>
       </section>
 
       <section className="container l-section center reveal">
