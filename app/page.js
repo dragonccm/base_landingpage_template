@@ -1,61 +1,92 @@
-const topLinks = [
-  { label: "Home", href: "#" },
-  { label: "DMCA", href: "#" },
-  { label: "Chính sách bảo mật", href: "#" },
-  { label: "Điều khoản sử dụng", href: "#" },
+const navItems = ["Home", "About", "Services", "Portfolio", "Pages", "Blog", "Contact"];
+
+const metrics = [
+  { value: "$2.5B+", label: "Assets Under Management" },
+  { value: "120+", label: "Startup Investments" },
+  { value: "38", label: "Global Partners" },
 ];
 
-const socialLinks = [
+const services = [
   {
-    prefix: "👉 Like và theo dõi",
-    label: "Fanpage",
-    href: "https://www.facebook.com/profile.php?id=61587278428982",
-    suffix: "để cập nhật những thông tin mới nhất",
+    title: "Venture Capital",
+    desc: "Funding ambitious founders from seed to growth stages.",
   },
   {
-    prefix: "👉 Tham gia",
-    label: "Group",
-    href: "https://www.facebook.com/groups/1186605343460035/",
-    suffix: "để thảo luận các vấn đề liên quan đến game",
+    title: "Growth Advisory",
+    desc: "Strategic support to scale operations, hiring and go-to-market.",
   },
   {
-    prefix: "👉 Đăng ký kênh",
-    label: "Youtube",
-    href: "https://www.youtube.com/channel/UCVuUgUNNyrROkm-z4fRdblQ",
-    suffix: "để theo dõi các video hướng dẫn chi tiết",
+    title: "M&A Strategy",
+    desc: "Deal sourcing, due diligence and value creation planning.",
   },
 ];
 
 export default function HomePage() {
   return (
-    <main>
-      <header className="topBar">
-        <nav className="container nav">
-          {topLinks.map((item) => (
-            <a key={item.label} href={item.href}>
-              {item.label}
-            </a>
-          ))}
-        </nav>
+    <main className="invested">
+      <header className="siteHeader">
+        <div className="container navWrap">
+          <a href="#" className="logo">Invested</a>
+          <nav>
+            <ul className="navList">
+              {navItems.map((item) => (
+                <li key={item}><a href="#">{item}</a></li>
+              ))}
+            </ul>
+          </nav>
+          <a href="#" className="ctaBtn">Get Consultation</a>
+        </div>
       </header>
 
       <section className="hero container">
-        <h1>Website tải game PC Việt Hoá miễn phí tốc độ cao</h1>
-        <p>
-          TamHonGame.com là nơi chia sẻ các tựa Game PC Việt Hoá mới nhất kèm link tải tốc độ cao và
-          hoàn toàn miễn phí
-        </p>
+        <div className="heroText">
+          <p className="kicker">Smart Capital For Bold Founders</p>
+          <h1>Investing in Visionary Teams Building The Future</h1>
+          <p className="lead">
+            We are a venture capital and private equity firm helping high-potential
+            businesses unlock growth with strategic investment and hands-on guidance.
+          </p>
+          <div className="heroActions">
+            <a href="#" className="primary">Start a Project</a>
+            <a href="#" className="ghost">Watch Video</a>
+          </div>
+        </div>
+
+        <div className="heroVisual">
+          <div className="chartCard">
+            <p>Portfolio Growth</p>
+            <strong>+48.2%</strong>
+            <span>Year over year performance</span>
+          </div>
+          <div className="dot dot1" />
+          <div className="dot dot2" />
+        </div>
       </section>
 
-      <section className="container community">
-        {socialLinks.map((item) => (
-          <p key={item.label}>
-            {item.prefix} <a href={item.href}>{item.label}</a> {item.suffix}
-          </p>
+      <section className="metrics container">
+        {metrics.map((item) => (
+          <article key={item.label}>
+            <h3>{item.value}</h3>
+            <p>{item.label}</p>
+          </article>
         ))}
       </section>
 
-      <footer className="footer">Copyright © 2024 Tamhongame.com</footer>
+      <section className="services container">
+        <div className="sectionHead">
+          <p>What We Do</p>
+          <h2>Financial Expertise Backed By Real Operator Experience</h2>
+        </div>
+        <div className="serviceGrid">
+          {services.map((service) => (
+            <article key={service.title} className="serviceCard">
+              <h3>{service.title}</h3>
+              <p>{service.desc}</p>
+              <a href="#">Learn more →</a>
+            </article>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }
