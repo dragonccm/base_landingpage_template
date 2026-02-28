@@ -7,7 +7,7 @@ export async function GET() {
 
 export async function PUT(req) {
   const body = await req.json();
-  if (!body?.identity || !body?.seo) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  if (!body?.identity || !body?.seo || !body?.smtp) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   await saveSettings(body);
   return NextResponse.json({ ok: true });
 }

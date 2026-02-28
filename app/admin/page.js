@@ -5,7 +5,7 @@ import { fetchAdminData, setActiveTab, setLandingState, setSettingsState } from 
 import ImageField from "@/components/ImageField";
 import { toast } from "@/lib/toast";
 
-const tabs = ["dashboard", "landing", "seo", "identity", "media"];
+const tabs = ["dashboard", "landing", "seo", "identity", "smtp", "media"];
 
 const contentGroups = [
   { id: "hero", label: "Hero Section", titleKey: "title", children: ["heroBadge", "subtitle", "cta", "cta2", "chip1", "chip2", "chip3", "chip4"] },
@@ -133,6 +133,8 @@ export default function Admin() {
         {active === "seo" && <div className="card"><h3>SEO Metadata</h3><div className="grid2">{Object.entries(settings.seo).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><textarea rows={3} value={v} onChange={(e) => setSettingsField("seo", k, e.target.value)} /></label>)}</div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save SEO</button></div>}
 
         {active === "identity" && <div className="card"><h3>Identity</h3><div className="grid2">{Object.entries(settings.identity).filter(([k]) => !k.toLowerCase().includes("logo") && !k.toLowerCase().includes("favicon")).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><input value={v} onChange={(e) => setSettingsField("identity", k, e.target.value)} /></label>)}</div><div className="grid2"><ImageField label="logoUrl" value={settings.identity.logoUrl} onChange={(v) => setSettingsField("identity", "logoUrl", v)} /><ImageField label="faviconUrl" value={settings.identity.faviconUrl} onChange={(v) => setSettingsField("identity", "faviconUrl", v)} /></div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save Identity</button></div>}
+
+        {active === "smtp" && <div className="card"><h3>SMTP Configuration (Contact Form)</h3><div className="grid2">{Object.entries(settings.smtp || {}).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><input type={k.toLowerCase().includes("pass") ? "password" : "text"} value={v || ""} onChange={(e) => setSettingsField("smtp", k, e.target.value)} /></label>)}</div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save SMTP</button></div>}
 
         {active === "media" && <>
           <form className="card" onSubmit={addMedia}>
