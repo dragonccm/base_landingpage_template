@@ -48,6 +48,10 @@ export default function Home() {
       </header>
 
       <section className="container l-hero">
+        <video className="heroVideo" autoPlay muted loop playsInline preload="metadata">
+          <source src="/videos/GettyImages-1308346105.mp4" type="video/mp4" />
+        </video>
+        <div className="heroOverlay" />
         <div className="heroNet" />
         <span className="l-badge"><Star size={14} /> {c.heroBadge}</span>
         <h1>{c.title.replace("TrustXLabs!", "")}<span>TrustXLabs!</span></h1>
