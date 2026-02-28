@@ -16,7 +16,9 @@ export default function Login() {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-    const d = await res.json();
+    const raw = await res.text();
+    let d = {};
+    try { d = raw ? JSON.parse(raw) : {}; } catch { d = { error: raw || "Server error" }; }
     setLoading(false);
     if (!res.ok) return alert(d.error || "Login failed");
     router.push("/admin");

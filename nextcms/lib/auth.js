@@ -2,7 +2,12 @@ import { EncryptJWT, jwtDecrypt } from "jose";
 import { cookies } from "next/headers";
 
 const COOKIE = "auth_token";
-const secret = () => new TextEncoder().encode(process.env.JWT_SECRET || "dev-secret");
+
+function secret() {
+  const raw = process.env.JWT_SECRET || "dev-secret-change-me";
+  const normalized = (raw + "00000000000000000000000000000000").slice(0, 32);
+  return new TextEncoder().encode(normalized);
+}
 
 export async function signToken(payload) {
   return new EncryptJWT(payload)
