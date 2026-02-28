@@ -112,7 +112,7 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 .mediaMeta h4{margin:0;font-size:15px}
 .mediaMeta p{margin:0;color:#666;min-height:20px}
 .mediaType{display:inline-block;width:max-content;padding:4px 10px;border-radius:999px;background:#eaf4ff;color:#1a7ebf;font-weight:700;font-size:12px}
-.deleteBtn{margin-top:10px;width:100%;border:0;border-radius:10px;padding:10px 12px;background:linear-gradient(135deg,#c83f5a,#963148);color:#fff;font-weight:700;cursor:pointer;transition:.18s}
+.deleteBtn{margin-top:10px;width:100%;border:0;border-radius:10px;padding:10px 12px;background:linear-gradient(135deg,#c83f5a,#963148);color:#fff;font-weight:700;cursor:pointer;transition:.18s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .deleteBtn:hover{transform:translateY(-1px);box-shadow:0 10px 18px rgba(163,55,82,.35)}
 .groupCard{border:1px solid #ececec;border-radius:12px;padding:12px;margin-bottom:12px;background:#fff}
 .groupHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}

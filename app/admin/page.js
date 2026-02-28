@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchAdminData, setActiveTab, setLandingState, setSettingsState } from "@/store/adminSlice";
 import ImageField from "@/components/ImageField";
 import { toast } from "@/lib/toast";
+import { Trash2 } from "lucide-react";
 
 const tabs = ["dashboard", "landing", "seo", "identity", "smtp", "media"];
 
@@ -154,7 +155,7 @@ export default function Admin() {
             <div className="grid2"><label className="fieldWrap"><span className="fieldLabel">name</span><input value={upload.name} onChange={(e) => setUpload({ ...upload, name: e.target.value })} /></label><label className="fieldWrap"><span className="fieldLabel">alt</span><input value={upload.alt} onChange={(e) => setUpload({ ...upload, alt: e.target.value })} /></label></div>
             <button className={`btn ${addingMedia ? "loading" : ""}`} disabled={addingMedia}>{addingMedia ? "Adding..." : "Add Media"}</button>
           </form>
-          <div className="mediaGrid">{media.map((m) => <article key={m.id} className="card mediaCard">{(m.type === "video" || /\.(mp4|webm|mov)$/i.test(m.url)) ? <video src={m.url} controls className="mediaThumb" /> : <img src={m.url} alt={m.alt || m.name} className="mediaThumb" />}<div className="mediaMeta"><h4>{m.name}</h4><p>{m.alt || "(không có mô tả)"}</p><span className="mediaType">{m.type || "image"}</span></div><button className="deleteBtn" onClick={() => removeMedia(m.id)}>🗑 Xoá media</button></article>)}</div>
+          <div className="mediaGrid">{media.map((m) => <article key={m.id} className="card mediaCard">{(m.type === "video" || /\.(mp4|webm|mov)$/i.test(m.url)) ? <video src={m.url} controls className="mediaThumb" /> : <img src={m.url} alt={m.alt || m.name} className="mediaThumb" />}<div className="mediaMeta"><h4>{m.name}</h4><p>{m.alt || "(không có mô tả)"}</p><span className="mediaType">{m.type || "image"}</span></div><button className="deleteBtn" onClick={() => removeMedia(m.id)}><Trash2 size={16} /> Xoá media</button></article>)}</div>
         </>}
       </section>
     </main>
