@@ -16,6 +16,17 @@ export async function POST(req) {
   return NextResponse.json({ ok: true, item });
 }
 
+export async function PATCH(req) {
+  const body = await req.json();
+  if (!body?.id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const media = await getMedia();
+  const idx = media.findIndex((m) => m.id === body.id);
+  if (idx === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  media[idx] = { ...media[idx], name: body.name ?? media[idx].name, alt: body.alt ?? media[idx].alt, url: body.url ?? media[idx].url, type: body.type ?? media[idx].type };
+  await saveMedia(media);
+  return NextResponse.json({ ok: true, item: media[idx] });
+}
+
 export async function DELETE(req) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");

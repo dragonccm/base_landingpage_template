@@ -26,6 +26,8 @@ export default function Admin() {
   const [saving, setSaving] = useState(false);
   const [addingMedia, setAddingMedia] = useState(false);
   const [expanded, setExpanded] = useState({ hero: true });
+  const [mediaPage, setMediaPage] = useState(1);
+  const [mediaEdits, setMediaEdits] = useState({});
 
   useEffect(() => { dispatch(fetchAdminData()); }, [dispatch]);
 
@@ -65,7 +67,25 @@ export default function Admin() {
     dispatch(fetchAdminData());
   }
 
+  async function updateMediaItem(item) {
+    const patch = mediaEdits[item.id] || {};
+    const payload = { ...item, ...patch };
+    const res = await fetch("/api/admin/media", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) return toast.error("Không cập nhật được media");
+    setMediaEdits((p) => ({ ...p, [item.id]: undefined }));
+    toast.success("Đã cập nhật media");
+    dispatch(fetchAdminData());
+  }
+
   const stats = useMemo(() => ({ media: media?.length || 0, contentFields: landing ? Object.keys(landing.content || {}).length : 0, seoFields: settings ? Object.keys(settings.seo || {}).length : 0 }), [media, landing, settings]);
+
+  const pageSize = 9;
+  const totalPages = Math.max(1, Math.ceil((media?.length || 0) / pageSize));
+  const paginatedMedia = (media || []).slice((mediaPage - 1) * pageSize, mediaPage * pageSize);
 
   if (loading || !landing || !settings) return <main className="adminShell"><aside className="sidebar" /><section className="mainPanel"><div className="skeleton lg" /><div className="skeleton" /><div className="skeleton" /></section></main>;
 
@@ -142,7 +162,7 @@ export default function Admin() {
           <div className="card" style={{ borderColor: t.primaryColor }}><h3>Live Preview</h3><div className="previewBox" style={{ fontFamily: t.fontFamily, color: t.textColor, background: t.bgColor }}><h2>{landing.content.title}</h2><p>{landing.content.subtitle}</p><button className="btn" style={{ background: t.primaryColor }}>{landing.content.cta}</button></div></div>
         </>}
 
-        {active === "seo" && <div className="card"><h3>SEO Metadata</h3><div className="grid2">{Object.entries(settings.seo).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><textarea rows={3} value={v} onChange={(e) => setSettingsField("seo", k, e.target.value)} /></label>)}</div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save SEO</button></div>}
+        {active === "seo" && <div className="card"><h3>SEO Metadata</h3><div className="grid2">{Object.entries(settings.seo).filter(([k]) => !k.toLowerCase().includes("image")).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><textarea rows={3} value={v} onChange={(e) => setSettingsField("seo", k, e.target.value)} /></label>)}</div><div className="grid2"><ImageField label="ogImage" mediaType="image" value={settings.seo.ogImage || ""} onChange={(v) => setSettingsField("seo", "ogImage", v)} /><ImageField label="socialPreviewImage" mediaType="image" value={settings.seo.socialPreviewImage || ""} onChange={(v) => setSettingsField("seo", "socialPreviewImage", v)} /></div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save SEO</button></div>}
 
         {active === "identity" && <div className="card"><h3>Identity</h3><div className="grid2">{Object.entries(settings.identity).filter(([k]) => !k.toLowerCase().includes("logo") && !k.toLowerCase().includes("favicon")).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><input value={v} onChange={(e) => setSettingsField("identity", k, e.target.value)} /></label>)}</div><div className="grid2"><ImageField label="logoUrl" value={settings.identity.logoUrl} onChange={(v) => setSettingsField("identity", "logoUrl", v)} /><ImageField label="faviconUrl" value={settings.identity.faviconUrl} onChange={(v) => setSettingsField("identity", "faviconUrl", v)} /></div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save Identity</button></div>}
 
@@ -155,7 +175,8 @@ export default function Admin() {
             <div className="grid2"><label className="fieldWrap"><span className="fieldLabel">name</span><input value={upload.name} onChange={(e) => setUpload({ ...upload, name: e.target.value })} /></label><label className="fieldWrap"><span className="fieldLabel">alt</span><input value={upload.alt} onChange={(e) => setUpload({ ...upload, alt: e.target.value })} /></label></div>
             <button className={`btn ${addingMedia ? "loading" : ""}`} disabled={addingMedia}>{addingMedia ? "Adding..." : "Add Media"}</button>
           </form>
-          <div className="mediaGrid">{media.map((m) => <article key={m.id} className="card mediaCard">{(m.type === "video" || /\.(mp4|webm|mov)$/i.test(m.url)) ? <video src={m.url} controls className="mediaThumb" /> : <img src={m.url} alt={m.alt || m.name} className="mediaThumb" />}<div className="mediaMeta"><h4>{m.name}</h4><p>{m.alt || "(không có mô tả)"}</p><span className="mediaType">{m.type || "image"}</span></div><button className="deleteBtn" onClick={() => removeMedia(m.id)}><Trash2 size={16} /> Xoá media</button></article>)}</div>
+          <div className="mediaGrid">{paginatedMedia.map((m) => { const edit = mediaEdits[m.id] || {}; const nameVal = edit.name ?? m.name ?? ""; const altVal = edit.alt ?? m.alt ?? ""; return <article key={m.id} className="card mediaCard">{(m.type === "video" || /\.(mp4|webm|mov)$/i.test(m.url)) ? <video src={m.url} controls className="mediaThumb" loading="lazy" /> : <img src={m.url} alt={altVal || nameVal} className="mediaThumb" loading="lazy" />}<div className="mediaMeta"><input value={nameVal} onChange={(e)=>setMediaEdits((p)=>({...p,[m.id]:{...(p[m.id]||{}),name:e.target.value}}))} /><input value={altVal} onChange={(e)=>setMediaEdits((p)=>({...p,[m.id]:{...(p[m.id]||{}),alt:e.target.value}}))} placeholder="Alt text" /><span className="mediaType">{m.type || "image"}</span></div><div className="row"><button className="btn" onClick={() => updateMediaItem(m)}>Lưu</button><button className="deleteBtn" onClick={() => removeMedia(m.id)}><Trash2 size={16} /> Xoá</button></div></article>; })}</div>
+          <div className="row pageRow"><button className="btn ghostBtn" onClick={() => setMediaPage((p) => Math.max(1, p - 1))} disabled={mediaPage === 1}>Prev</button><span>Page {mediaPage}/{totalPages}</span><button className="btn ghostBtn" onClick={() => setMediaPage((p) => Math.min(totalPages, p + 1))} disabled={mediaPage === totalPages}>Next</button></div>
         </>}
       </section>
     </main>
