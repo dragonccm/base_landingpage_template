@@ -208,9 +208,17 @@ export async function ensureSchema() {
 export async function getLanding() {
   await ensureSchema();
   const data = await getKey("landing", defaultLanding);
+
+  const baseContent = { ...defaultLanding.content, ...(data.content || {}) };
+  const contentI18n = {
+    en: { ...baseContent, ...(data.contentI18n?.en || {}) },
+    vi: { ...baseContent, ...(data.contentI18n?.vi || {}) },
+  };
+
   return {
     theme: { ...defaultLanding.theme, ...(data.theme || {}) },
-    content: { ...defaultLanding.content, ...(data.content || {}) },
+    content: baseContent,
+    contentI18n,
   };
 }
 
