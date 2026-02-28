@@ -23,7 +23,9 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 .l-btn{border:0;background:var(--primary,#1E6FFF);color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer}
 .l-btn.ghost{background:#fff;color:#111;border:1px solid #d7dfe9}
 
-.l-hero{position:relative;text-align:center;padding:56px 0 28px;overflow:hidden}
+.l-hero{position:relative;text-align:center;padding:56px 0 28px;overflow:hidden;border-radius:16px}
+.heroVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.heroOverlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(243,246,251,.9));z-index:0}
 .heroNet{position:absolute;right:-60px;top:-30px;width:380px;height:240px;background:radial-gradient(circle,#d7ebff 1px,transparent 1px);background-size:18px 18px;opacity:.5;z-index:0}
 .l-hero>*{position:relative;z-index:1}
 .l-badge{display:inline-flex;align-items:center;gap:6px;border:1px solid #97cff3;color:var(--primary);padding:6px 14px;border-radius:999px;font-size:12px;background:#eef4ff}
