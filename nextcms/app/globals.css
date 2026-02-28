@@ -53,7 +53,7 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 .l-card small{font-size:11px;color:#5b8fd9;font-weight:700;display:block;margin-bottom:6px}
 
 .focusBand{width:100%;background:var(--focusBg,#EAF1FA);padding:20px 0}
-.focusInner{margin-top:0}
+.focusInner{margin-top:0;background:transparent !important}
 .split{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;align-items:center}
 .split ul{margin:0;padding-left:18px;color:#4d5a70;line-height:1.8}
 .artBox{height:290px;border-radius:12px;background:linear-gradient(145deg,#d8efff,#c4e2ff);display:grid;place-items:center}
