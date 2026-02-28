@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "seed": "node scripts/seed.mjs"
+    "seed": "node scripts/seed.mjs",
+    "sync:media": "node scripts/sync-media.mjs"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
