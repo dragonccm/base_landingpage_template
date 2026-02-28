@@ -89,14 +89,17 @@ export default function Admin() {
           <div className="card">
             <h3>Theme</h3>
             <div className="grid2">
-              {Object.entries(landing.theme).map(([k, v]) => (
-                <label key={k} className="fieldWrap">
-                  <span className="fieldLabel">{k}</span>
-                  {k.toLowerCase().includes("color") ? (
-                    <div className="colorPickWrap"><span className="colorSwatch" style={{ background: v }} /><input type="color" value={v} onChange={(e) => setLandingField("theme", k, e.target.value)} /><input value={v} onChange={(e) => setLandingField("theme", k, e.target.value)} /></div>
-                  ) : <input value={v} onChange={(e) => setLandingField("theme", k, e.target.value)} />}
-                </label>
-              ))}
+              {Object.entries(landing.theme).map(([k, v]) => {
+                const isColorLike = typeof v === "string" && (/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v) || v.startsWith("rgb") || k.toLowerCase().includes("color") || k.toLowerCase().includes("bg") || k.toLowerCase().includes("grad") || k.toLowerCase().includes("border"));
+                return (
+                  <label key={k} className="fieldWrap">
+                    <span className="fieldLabel">{k}</span>
+                    {isColorLike ? (
+                      <div className="colorPickWrap"><span className="colorSwatch" style={{ background: v }} /><input type="color" value={v.startsWith("#") ? v : "#2f9ae0"} onChange={(e) => setLandingField("theme", k, e.target.value)} /><input value={v} onChange={(e) => setLandingField("theme", k, e.target.value)} /></div>
+                    ) : <input value={v} onChange={(e) => setLandingField("theme", k, e.target.value)} />}
+                  </label>
+                );
+              })}
             </div>
           </div>
 
