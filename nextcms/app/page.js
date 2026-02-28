@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLanding, fetchSettings } from "@/store/siteSlice";
-import { Flag, UserRound, Handshake, Globe, CreditCard, ChartNoAxesCombined, Cpu, Link2, IdCard, Building2, TrendingUp, Wallet, FlaskConical, MapPin, Phone, Mail, Clock3, Star } from "lucide-react";
+import { Flag, UserRound, Handshake, Globe, CreditCard, ChartNoAxesCombined, Cpu, Link2, IdCard, Building2, TrendingUp, Wallet, FlaskConical, MapPin, Phone, Mail, Clock3, Star, ArrowUp } from "lucide-react";
 import { toast } from "@/lib/toast";
 
 const goalIcons = [Flag, UserRound, Handshake, Globe];
@@ -14,9 +14,27 @@ export default function Home() {
   const { landing, settings, loading } = useSelector((s) => s.site);
   const [menuOpen, setMenuOpen] = useState(false);
   const [sending, setSending] = useState(false);
+  const [showTop, setShowTop] = useState(false);
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", message: "" });
 
   useEffect(() => { dispatch(fetchLanding()); dispatch(fetchSettings()); }, [dispatch]);
+
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > 420);
+    window.addEventListener("scroll", onScroll);
+    onScroll();
+
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add("inview")),
+      { threshold: 0.12 }
+    );
+    document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      observer.disconnect();
+    };
+  }, [landing]);
 
   async function submitContact() {
     setSending(true);
@@ -40,17 +58,15 @@ export default function Home() {
 
   return (
     <main className="landing" style={{ "--primary": t.primaryColor, "--secondary": t.secondaryColor, "--txt": t.textColor, "--bg": t.bgColor, fontFamily: t.fontFamily }}>
-      <header className="l-header container">
+      <header className="l-header container stickyHeader">
         <div className="l-logoWrap">{i.logoUrl ? <img src={i.logoUrl} alt="logo" className="l-logo" /> : <div className="logoFallback">N</div>}</div>
         <button className="menuToggle" onClick={() => setMenuOpen((v) => !v)}>☰</button>
         <nav className={`l-nav ${menuOpen ? "open" : ""}`}>{navs.map((x) => <a key={x} href="#">{x}</a>)}</nav>
         <button className="l-btn hideMobile">{c.navCta}</button>
       </header>
 
-      <section className="container l-hero">
-        <video className="heroVideo" autoPlay muted loop playsInline preload="metadata">
-          <source src="/videos/GettyImages-1308346105.mp4" type="video/mp4" />
-        </video>
+      <section className="container l-hero reveal">
+        <video className="heroVideo" autoPlay muted loop playsInline preload="metadata"><source src="/videos/GettyImages-1308346105.mp4" type="video/mp4" /></video>
         <div className="heroOverlay" />
         <div className="heroNet" />
         <span className="l-badge"><Star size={14} /> {c.heroBadge}</span>
@@ -60,28 +76,28 @@ export default function Home() {
         <div className="chipRow">{chips.map((x) => <span key={x}>{x}</span>)}</div>
       </section>
 
-      <section className="container l-section center">
+      <section className="container l-section center reveal">
         <h2>{c.goalsTitle}</h2><p>{c.goalsSubtitle}</p>
         <div className="l-grid4">{goals.map(([title, desc], idx) => { const Icon = goalIcons[idx]; return <article key={title} className="l-card"><div className="iconBox"><Icon size={18} /></div><h3>{title}</h3><p>{desc}</p></article>; })}</div>
       </section>
 
-      <section className="container l-section split">
+      <section className="container l-section split reveal">
         <div><h2>{c.functionsTitle}</h2><ul>{[c.function1, c.function2, c.function3, c.function4, c.function5, c.function6].filter(Boolean).map((x) => <li key={x}>{x}</li>)}</ul></div>
         <div className="artBox"><div className="diamond" /></div>
       </section>
 
-      <section className="container l-section center">
+      <section className="container l-section center reveal">
         <h2>{c.focusTitle}</h2><p>We focus on four key areas to deliver advanced financial technology solutions.</p>
         <div className="l-grid2">{focuses.map(([label, title, desc], idx) => { const Icon = focusIcons[idx]; return <article key={title} className="l-card"><small>{label}</small><div className="iconBox"><Icon size={18} /></div><h3>{title}</h3><p>{desc}</p></article>; })}</div>
       </section>
 
-      <section className="container l-section center">
+      <section className="container l-section center reveal">
         <h2>{c.researchTitle}</h2>
         <div className="timelineWrap"><div className="timelineLine" />{timeline.map(([title, desc], idx) => { const Icon = timelineIcons[idx]; return <article key={title} className={`timelineCard ${idx % 2 ? "right" : "left"}`}><div className="timelineDot" /><div className="l-card"><div className="iconBox"><Icon size={18} /></div><h3>{title}</h3><p>{desc}</p></div></article>; })}</div>
         <div className="stats">{stats.map(([value, label]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}</div>
       </section>
 
-      <section className="container l-section">
+      <section className="container l-section reveal">
         <h2 className="center">Connect With <span>{i.siteTitle}</span></h2>
         <div className="contactGrid">
           <form className="l-card contactForm" onSubmit={(e) => { e.preventDefault(); submitContact(); }}>
@@ -101,7 +117,9 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="l-footer"><div className="container footCols"><div><h3>{i.siteTitle}</h3><p>{c.footerText}</p><p>● Facebook  ● LinkedIn  ● X  ● YouTube</p></div><div><h4>{c.footerCol2Title}</h4><p>{(c.footerCol2Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div><div><h4>{c.footerCol3Title}</h4><p>{(c.footerCol3Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div><div><h4>{c.footerCol4Title}</h4><p>{(c.footerCol4Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div></div><div className="copy">© 2025 TrustXLabs, All Rights Reserved.</div></footer>
+      <footer className="l-footer reveal"><div className="container footCols"><div><h3>{i.siteTitle}</h3><p>{c.footerText}</p><p>● Facebook  ● LinkedIn  ● X  ● YouTube</p></div><div><h4>{c.footerCol2Title}</h4><p>{(c.footerCol2Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div><div><h4>{c.footerCol3Title}</h4><p>{(c.footerCol3Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div><div><h4>{c.footerCol4Title}</h4><p>{(c.footerCol4Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div></div><div className="copy">© 2025 TrustXLabs, All Rights Reserved.</div></footer>
+
+      {showTop && <button className="backTop" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><ArrowUp size={18} /></button>}
     </main>
   );
 }
