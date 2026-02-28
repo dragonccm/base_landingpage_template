@@ -49,6 +49,10 @@ export default function Home() {
   if (loading || !landing || !settings) return <main className="landing"><div className="container"><div className="skeleton lg" /><div className="skeleton" /><div className="skeleton" /></div></main>;
 
   const t = landing.theme, c = landing.content, i = settings.identity;
+  const companyName = i.siteTitle || "TrustXLabs";
+  const heroPrefix = c.titlePrefix || "Welcome to";
+  const heroHighlight = c.titleHighlight || `${companyName}!`;
+  const subtitleHtml = (c.subtitle || "").replaceAll("TrustXLabs", companyName);
   const navs = [
     { label: c.nav1, href: "#hero" },
     { label: c.nav2, href: "#goals" },
@@ -64,7 +68,7 @@ export default function Home() {
   const stats = [[c.stat1Value, c.stat1Label], [c.stat2Value, c.stat2Label], [c.stat3Value, c.stat3Label], [c.stat4Value, c.stat4Label]];
 
   return (
-    <main className="landing" style={{ "--primary": t.primaryColor, "--secondary": t.secondaryColor, "--txt": t.textColor, "--muted": t.mutedColor, "--bg": t.bgColor, "--badgeFrom": t.badgeBorderFrom, "--badgeTo": t.badgeBorderTo, "--iconFrom": t.iconGradFrom, "--iconTo": t.iconGradTo, "--focusBg": t.focusBg, "--sectionBg": t.sectionBg, "--cardBorder": t.cardBorder, "--cardHoverShadow": t.cardHoverShadow, "--statsBg": t.statsBg, "--footerBg": t.footerBg, "--footerText": t.footerText, "--heroOverlayFrom": t.heroOverlayFrom, "--heroOverlayTo": t.heroOverlayTo, fontFamily: t.fontFamily }}>
+    <main className="landing" style={{ "--primary": t.primaryColor, "--secondary": t.secondaryColor, "--txt": t.textColor, "--muted": t.mutedColor, "--bg": t.bgColor, "--badgeFrom": t.badgeBorderFrom, "--badgeTo": t.badgeBorderTo, "--iconFrom": t.iconGradFrom, "--iconTo": t.iconGradTo, "--titleGradFrom": t.titleGradFrom, "--titleGradTo": t.titleGradTo, "--navText": t.navTextColor, "--focusBg": t.focusBg, "--sectionBg": t.sectionBg, "--cardBorder": t.cardBorder, "--cardHoverShadow": t.cardHoverShadow, "--statsBg": t.statsBg, "--footerBg": t.footerBg, "--footerText": t.footerText, "--heroOverlayFrom": t.heroOverlayFrom, "--heroOverlayTo": t.heroOverlayTo, fontFamily: t.fontFamily }}>
       <header className="stickyHeader">
         <div className="l-header container">
           <div className="l-logoWrap">{i.logoUrl ? <img src={i.logoUrl} alt="logo" className="l-logo" /> : <div className="logoFallback">N</div>}</div>
@@ -80,8 +84,8 @@ export default function Home() {
         <div className="heroNet" />
         <div className="container heroInner">
           <span className="l-badge"><Star size={14} /> {c.heroBadge}</span>
-          <h1>{c.title.replace("TrustXLabs!", "")}<span>TrustXLabs!</span></h1>
-          <p dangerouslySetInnerHTML={{ __html: c.subtitle }} />
+          <h1>{heroPrefix} <span className="titleGradient">{heroHighlight.replaceAll("TrustXLabs", companyName)}</span></h1>
+          <p dangerouslySetInnerHTML={{ __html: subtitleHtml }} />
           <div className="l-rowCenter"><button className="l-btn">{c.cta}</button><button className="l-btn ghost">{c.cta2}</button></div>
           <div className="chipRow">{chips.map((x) => <span key={x}>{x}</span>)}</div>
         </div>
@@ -111,7 +115,7 @@ export default function Home() {
       </section>
 
       <section id="contact" className="container l-section reveal">
-        <h2 className="center">Connect With <span>{i.siteTitle}</span></h2>
+        <h2 className="center">Connect With <span className="titleGradient">{companyName}</span></h2>
         <div className="contactGrid">
           <form className="l-card contactForm" onSubmit={(e) => { e.preventDefault(); submitContact(); }}>
             <h3>{c.formTitle}</h3>
