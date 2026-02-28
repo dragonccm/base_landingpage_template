@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAdminData, setActiveTab, setLandingState, setSettingsState } from "@/store/adminSlice";
 import ImageField from "@/components/ImageField";
+import { toast } from "@/lib/toast";
 
 const tabs = ["dashboard", "landing", "seo", "identity", "media"];
 
@@ -11,6 +12,7 @@ export default function Admin() {
   const { landing, settings, media, active, loading } = useSelector((s) => s.admin);
   const [upload, setUpload] = useState({ url: "", name: "", alt: "" });
   const [saving, setSaving] = useState(false);
+  const [addingMedia, setAddingMedia] = useState(false);
 
   useEffect(() => { dispatch(fetchAdminData()); }, [dispatch]);
 
@@ -21,27 +23,31 @@ export default function Admin() {
     setSaving(true);
     await fetch("/api/admin/landing", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(landing) });
     setSaving(false);
-    alert("Lưu landing thành công");
+    toast.success("Lưu landing thành công");
   }
 
   async function saveSettings() {
     setSaving(true);
     await fetch("/api/admin/settings", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(settings) });
     setSaving(false);
-    alert("Lưu cài đặt thành công");
+    toast.success("Lưu cài đặt thành công");
   }
 
   async function addMedia(e) {
     e.preventDefault();
-    if (!upload.url) return alert("Vui lòng chọn/upload ảnh trước");
+    if (!upload.url) return toast.error("Vui lòng chọn/upload ảnh trước");
+    setAddingMedia(true);
     const res = await fetch("/api/admin/media", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(upload) });
-    if (!res.ok) return alert("Thêm media lỗi");
+    setAddingMedia(false);
+    if (!res.ok) return toast.error("Thêm media lỗi");
     setUpload({ url: "", name: "", alt: "" });
+    toast.success("Thêm media thành công");
     dispatch(fetchAdminData());
   }
 
   async function removeMedia(id) {
     await fetch(`/api/admin/media?id=${id}`, { method: "DELETE" });
+    toast.info("Đã xoá media");
     dispatch(fetchAdminData());
   }
 
@@ -61,7 +67,7 @@ export default function Admin() {
       <section className="mainPanel">
         <header className="panelHeader">
           <div><h1>Admin Dashboard</h1><p>White UI + Black sidebar + accents #75323c / #dab772</p></div>
-          <div className="row"><a href="/" target="_blank">Open Site</a><button className="btn" disabled={saving}>{saving ? "Saving..." : "Ready"}</button></div>
+          <div className="row"><a href="/" target="_blank">Open Site</a><button className={`btn ${saving ? "loading" : ""}`} disabled={saving}>{saving ? "Saving..." : "Ready"}</button></div>
         </header>
 
         {active === "dashboard" && <div className="grid3"><article className="card kpi"><h3>Media</h3><strong>{stats.media}</strong></article><article className="card kpi"><h3>Content Fields</h3><strong>{stats.contentFields}</strong></article><article className="card kpi"><h3>SEO Fields</h3><strong>{stats.seoFields}</strong></article></div>}
@@ -89,15 +95,15 @@ export default function Admin() {
             <h3>Content Editor</h3>
             <div className="editorToolbar"><button type="button" onClick={() => setLandingField("content", "section1", `<strong>${landing.content.section1}</strong>`)}>B</button><button type="button" onClick={() => setLandingField("content", "section1", `<em>${landing.content.section1}</em>`)}>I</button><button type="button" onClick={() => setLandingField("content", "section1", `<p>${landing.content.section1}</p><ul><li>Item</li></ul>`)}>List</button></div>
             <div className="grid2">{Object.entries(landing.content).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><textarea rows={4} value={v} onChange={(e) => setLandingField("content", k, e.target.value)} /></label>)}</div>
-            <button className="btn" onClick={saveLanding}>Save Landing</button>
+            <button className={`btn ${saving ? "loading" : ""}`} onClick={saveLanding} disabled={saving}>Save Landing</button>
           </div>
 
           <div className="card" style={{ borderColor: t.primaryColor }}><h3>Live Preview</h3><div className="previewBox" style={{ fontFamily: t.fontFamily, color: t.textColor, background: t.bgColor }}><h2>{landing.content.title}</h2><p>{landing.content.subtitle}</p><button className="btn" style={{ background: t.primaryColor }}>{landing.content.cta}</button></div></div>
         </>}
 
-        {active === "seo" && <div className="card"><h3>SEO Metadata</h3><div className="grid2">{Object.entries(settings.seo).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><textarea rows={3} value={v} onChange={(e) => setSettingsField("seo", k, e.target.value)} /></label>)}</div><button className="btn" onClick={saveSettings}>Save SEO</button></div>}
+        {active === "seo" && <div className="card"><h3>SEO Metadata</h3><div className="grid2">{Object.entries(settings.seo).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><textarea rows={3} value={v} onChange={(e) => setSettingsField("seo", k, e.target.value)} /></label>)}</div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save SEO</button></div>}
 
-        {active === "identity" && <div className="card"><h3>Identity</h3><div className="grid2">{Object.entries(settings.identity).filter(([k]) => !k.toLowerCase().includes("logo") && !k.toLowerCase().includes("favicon")).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><input value={v} onChange={(e) => setSettingsField("identity", k, e.target.value)} /></label>)}</div><div className="grid2"><ImageField label="logoUrl" value={settings.identity.logoUrl} onChange={(v) => setSettingsField("identity", "logoUrl", v)} /><ImageField label="faviconUrl" value={settings.identity.faviconUrl} onChange={(v) => setSettingsField("identity", "faviconUrl", v)} /></div><button className="btn" onClick={saveSettings}>Save Identity</button></div>}
+        {active === "identity" && <div className="card"><h3>Identity</h3><div className="grid2">{Object.entries(settings.identity).filter(([k]) => !k.toLowerCase().includes("logo") && !k.toLowerCase().includes("favicon")).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><input value={v} onChange={(e) => setSettingsField("identity", k, e.target.value)} /></label>)}</div><div className="grid2"><ImageField label="logoUrl" value={settings.identity.logoUrl} onChange={(v) => setSettingsField("identity", "logoUrl", v)} /><ImageField label="faviconUrl" value={settings.identity.faviconUrl} onChange={(v) => setSettingsField("identity", "faviconUrl", v)} /></div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save Identity</button></div>}
 
         {active === "media" && <>
           <form className="card" onSubmit={addMedia}>
@@ -107,7 +113,7 @@ export default function Admin() {
               <label className="fieldWrap"><span className="fieldLabel">name</span><input value={upload.name} onChange={(e) => setUpload({ ...upload, name: e.target.value })} /></label>
               <label className="fieldWrap"><span className="fieldLabel">alt</span><input value={upload.alt} onChange={(e) => setUpload({ ...upload, alt: e.target.value })} /></label>
             </div>
-            <button className="btn">Add Media</button>
+            <button className={`btn ${addingMedia ? "loading" : ""}`} disabled={addingMedia}>{addingMedia ? "Adding..." : "Add Media"}</button>
           </form>
           <div className="mediaGrid">{media.map((m) => <article key={m.id} className="card"><img src={m.url} alt={m.alt || m.name} /><h4>{m.name}</h4><p>{m.alt}</p><button className="btn danger" onClick={() => removeMedia(m.id)}>Delete</button></article>)}</div>
         </>}

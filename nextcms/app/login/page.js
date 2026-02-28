@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "@/lib/toast";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -20,7 +21,8 @@ export default function Login() {
     let d = {};
     try { d = raw ? JSON.parse(raw) : {}; } catch { d = { error: raw || "Server error" }; }
     setLoading(false);
-    if (!res.ok) return alert(d.error || "Login failed");
+    if (!res.ok) return toast.error(d.error || "Login failed");
+    toast.success("Đăng nhập thành công");
     router.push("/admin");
   }
 
