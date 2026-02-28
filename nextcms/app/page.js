@@ -49,7 +49,14 @@ export default function Home() {
   if (loading || !landing || !settings) return <main className="landing"><div className="container"><div className="skeleton lg" /><div className="skeleton" /><div className="skeleton" /></div></main>;
 
   const t = landing.theme, c = landing.content, i = settings.identity;
-  const navs = [c.nav1, c.nav2, c.nav3, c.nav4, c.nav5, c.nav6].filter(Boolean);
+  const navs = [
+    { label: c.nav1, href: "#hero" },
+    { label: c.nav2, href: "#goals" },
+    { label: c.nav3, href: "#focus" },
+    { label: c.nav4, href: "#research" },
+    { label: c.nav5, href: "#contact" },
+    { label: c.nav6, href: "#footer" },
+  ].filter((x) => x.label);
   const chips = [c.chip1, c.chip2, c.chip3, c.chip4].filter(Boolean);
   const goals = [[c.goal1Title, c.goal1Desc], [c.goal2Title, c.goal2Desc], [c.goal3Title, c.goal3Desc], [c.goal4Title, c.goal4Desc]];
   const focuses = [[c.focus1Label, c.focus1Title, c.focus1Desc], [c.focus2Label, c.focus2Title, c.focus2Desc], [c.focus3Label, c.focus3Title, c.focus3Desc], [c.focus4Label, c.focus4Title, c.focus4Desc]];
@@ -58,14 +65,16 @@ export default function Home() {
 
   return (
     <main className="landing" style={{ "--primary": t.primaryColor, "--secondary": t.secondaryColor, "--txt": t.textColor, "--muted": t.mutedColor, "--bg": t.bgColor, "--badgeFrom": t.badgeBorderFrom, "--badgeTo": t.badgeBorderTo, "--iconFrom": t.iconGradFrom, "--iconTo": t.iconGradTo, "--focusBg": t.focusBg, "--sectionBg": t.sectionBg, "--cardBorder": t.cardBorder, "--cardHoverShadow": t.cardHoverShadow, "--statsBg": t.statsBg, "--footerBg": t.footerBg, "--footerText": t.footerText, "--heroOverlayFrom": t.heroOverlayFrom, "--heroOverlayTo": t.heroOverlayTo, fontFamily: t.fontFamily }}>
-      <header className="l-header container stickyHeader">
-        <div className="l-logoWrap">{i.logoUrl ? <img src={i.logoUrl} alt="logo" className="l-logo" /> : <div className="logoFallback">N</div>}</div>
-        <button className="menuToggle" onClick={() => setMenuOpen((v) => !v)}>☰</button>
-        <nav className={`l-nav ${menuOpen ? "open" : ""}`}>{navs.map((x) => <a key={x} href="#">{x}</a>)}</nav>
-        <button className="l-btn hideMobile">{c.navCta}</button>
+      <header className="stickyHeader">
+        <div className="l-header container">
+          <div className="l-logoWrap">{i.logoUrl ? <img src={i.logoUrl} alt="logo" className="l-logo" /> : <div className="logoFallback">N</div>}</div>
+          <button className="menuToggle" onClick={() => setMenuOpen((v) => !v)}>☰</button>
+          <nav className={`l-nav ${menuOpen ? "open" : ""}`}>{navs.map((x) => <a key={x.label} href={x.href}>{x.label}</a>)}</nav>
+          <button className="l-btn hideMobile" onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}>{c.navCta}</button>
+        </div>
       </header>
 
-      <section className="l-hero reveal">
+      <section id="hero" className="l-hero reveal">
         <video className="heroVideo" autoPlay muted loop playsInline preload="metadata"><source src="/videos/GettyImages-1308346105.mp4" type="video/mp4" /></video>
         <div className="heroOverlay" />
         <div className="heroNet" />
@@ -78,7 +87,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="container l-section center reveal">
+      <section id="goals" className="container l-section center reveal">
         <h2>{c.goalsTitle}</h2><p>{c.goalsSubtitle}</p>
         <div className="l-grid4">{goals.map(([title, desc], idx) => { const Icon = goalIcons[idx]; return <article key={title} className="l-card"><div className="iconBox"><Icon size={18} /></div><h3>{title}</h3><p>{desc}</p></article>; })}</div>
       </section>
@@ -88,20 +97,20 @@ export default function Home() {
         <div className="artBox"><div className="diamond" /></div>
       </section>
 
-      <section className="focusBand reveal">
+      <section id="focus" className="focusBand reveal">
         <div className="container l-section center focusInner">
           <h2>{c.focusTitle}</h2><p>We focus on four key areas to deliver advanced financial technology solutions.</p>
           <div className="l-grid2">{focuses.map(([label, title, desc], idx) => { const Icon = focusIcons[idx]; return <article key={title} className="l-card"><small>{label}</small><div className="iconBox"><Icon size={22} /></div><h3>{title}</h3><p>{desc}</p></article>; })}</div>
         </div>
       </section>
 
-      <section className="container l-section center reveal">
+      <section id="research" className="container l-section center reveal">
         <h2>{c.researchTitle}</h2>
         <div className="timelineWrap"><div className="timelineLine" />{timeline.map(([title, desc], idx) => { const Icon = timelineIcons[idx]; return <article key={title} className={`timelineCard ${idx % 2 ? "right" : "left"}`}><div className="timelineDot" /><div className="l-card"><div className="iconBox"><Icon size={18} /></div><h3>{title}</h3><p>{desc}</p></div></article>; })}</div>
         <div className="stats">{stats.map(([value, label]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}</div>
       </section>
 
-      <section className="container l-section reveal">
+      <section id="contact" className="container l-section reveal">
         <h2 className="center">Connect With <span>{i.siteTitle}</span></h2>
         <div className="contactGrid">
           <form className="l-card contactForm" onSubmit={(e) => { e.preventDefault(); submitContact(); }}>
@@ -121,7 +130,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="l-footer reveal"><div className="container footCols"><div><h3>{i.siteTitle}</h3><p>{c.footerText}</p><p>● Facebook  ● LinkedIn  ● X  ● YouTube</p></div><div><h4>{c.footerCol2Title}</h4><p>{(c.footerCol2Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div><div><h4>{c.footerCol3Title}</h4><p>{(c.footerCol3Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div><div><h4>{c.footerCol4Title}</h4><p>{(c.footerCol4Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div></div><div className="copy">© 2025 TrustXLabs, All Rights Reserved.</div></footer>
+      <footer id="footer" className="l-footer reveal"><div className="container footCols"><div><h3>{i.siteTitle}</h3><p>{c.footerText}</p><p>● Facebook  ● LinkedIn  ● X  ● YouTube</p></div><div><h4>{c.footerCol2Title}</h4><p>{(c.footerCol2Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div><div><h4>{c.footerCol3Title}</h4><p>{(c.footerCol3Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div><div><h4>{c.footerCol4Title}</h4><p>{(c.footerCol4Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div></div><div className="copy">© 2025 TrustXLabs, All Rights Reserved.</div></footer>
 
       {showTop && <button className="backTop" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><ArrowUp size={18} /></button>}
     </main>

@@ -1,4 +1,4 @@
-*{box-sizing:border-box}body{margin:0;font-family:Lato,Inter,Arial,sans-serif;background:#fff;color:#151515}a{text-decoration:none;color:inherit}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Lato,Inter,Arial,sans-serif;background:#fff;color:#151515}a{text-decoration:none;color:inherit}
 .container{width:min(1120px,94vw);margin:0 auto}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .btn{border:0;background:linear-gradient(135deg,var(--iconFrom,#2B9EDA),var(--iconTo,#1A7EBF));color:#fff;padding:10px 14px;border-radius:9px;cursor:pointer}.btn.danger{background:#2f2f2f}
 input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;background:#fff}
@@ -15,6 +15,7 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 
 /* Landing */
 .landing{background:var(--bg,#f3f6fb);color:var(--txt,#101828);padding-bottom:20px}
+.landing section[id], .landing footer[id]{scroll-margin-top:90px}
 .l-header{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:16px}.stickyHeader{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);border-bottom:1px solid #e8eef6}.l-logo{height:30px;object-fit:contain}.l-logoWrap{width:140px}
 .menuToggle{display:none;border:1px solid #c8d7e6;background:#fff;border-radius:8px;padding:6px 10px}
 .l-nav{display:flex;gap:16px;font-size:14px}.l-nav a{color:#364152}
