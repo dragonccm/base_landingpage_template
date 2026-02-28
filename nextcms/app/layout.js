@@ -5,6 +5,7 @@ import ToastViewport from "./ToastViewport";
 
 export async function generateMetadata() {
   const settings = await getSettings();
+  const shareImage = settings.seo.ogImage || settings.seo.socialPreviewImage || "";
   return {
     title: settings.seo.metaTitle || settings.identity.siteTitle,
     description: settings.seo.metaDescription,
@@ -13,7 +14,13 @@ export async function generateMetadata() {
     openGraph: {
       title: settings.seo.metaTitle || settings.identity.siteTitle,
       description: settings.seo.metaDescription,
-      images: settings.seo.ogImage ? [settings.seo.ogImage] : [],
+      images: shareImage ? [shareImage] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: settings.seo.metaTitle || settings.identity.siteTitle,
+      description: settings.seo.metaDescription,
+      images: shareImage ? [shareImage] : [],
     },
   };
 }
