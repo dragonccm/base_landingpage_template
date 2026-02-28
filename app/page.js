@@ -1,66 +1,61 @@
+const topLinks = [
+  { label: "Home", href: "#" },
+  { label: "DMCA", href: "#" },
+  { label: "Chính sách bảo mật", href: "#" },
+  { label: "Điều khoản sử dụng", href: "#" },
+];
+
 const socialLinks = [
   {
-    label: "Fanpage Facebook",
+    prefix: "👉 Like và theo dõi",
+    label: "Fanpage",
     href: "https://www.facebook.com/profile.php?id=61587278428982",
-    description: "Cập nhật game mới nhanh nhất",
+    suffix: "để cập nhật những thông tin mới nhất",
   },
   {
-    label: "Group Facebook",
+    prefix: "👉 Tham gia",
+    label: "Group",
     href: "https://www.facebook.com/groups/1186605343460035/",
-    description: "Thảo luận, hỏi đáp về game",
+    suffix: "để thảo luận các vấn đề liên quan đến game",
   },
   {
-    label: "Kênh YouTube",
+    prefix: "👉 Đăng ký kênh",
+    label: "Youtube",
     href: "https://www.youtube.com/channel/UCVuUgUNNyrROkm-z4fRdblQ",
-    description: "Video hướng dẫn cài đặt chi tiết",
+    suffix: "để theo dõi các video hướng dẫn chi tiết",
   },
 ];
 
-const menuItems = ["Home", "DMCA", "Chính sách bảo mật", "Điều khoản sử dụng"];
-
 export default function HomePage() {
   return (
-    <main className="page">
-      <header className="header">
-        <div className="container navWrap">
-          <a className="logo" href="#">TamHonGame.com</a>
-          <nav>
-            <ul className="menu">
-              {menuItems.map((item) => (
-                <li key={item}>
-                  <a href="#">{item}</a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </div>
+    <main>
+      <header className="topBar">
+        <nav className="container nav">
+          {topLinks.map((item) => (
+            <a key={item.label} href={item.href}>
+              {item.label}
+            </a>
+          ))}
+        </nav>
       </header>
 
       <section className="hero container">
-        <p className="badge">Website tải game PC Việt Hoá miễn phí tốc độ cao</p>
-        <h1>Tải game PC Việt Hoá mới nhất, nhanh và miễn phí</h1>
-        <p className="subtitle">
-          TamHonGame.com là nơi chia sẻ các tựa game PC Việt Hoá chất lượng, dễ tải,
-          dễ cài đặt và luôn được cập nhật liên tục.
+        <h1>Website tải game PC Việt Hoá miễn phí tốc độ cao</h1>
+        <p>
+          TamHonGame.com là nơi chia sẻ các tựa Game PC Việt Hoá mới nhất kèm link tải tốc độ cao và
+          hoàn toàn miễn phí
         </p>
       </section>
 
-      <section className="container linksSection">
-        <h2>Kết nối cộng đồng TamHonGame</h2>
-        <div className="cardGrid">
-          {socialLinks.map((link) => (
-            <a key={link.label} href={link.href} target="_blank" rel="noreferrer" className="card">
-              <h3>{link.label}</h3>
-              <p>{link.description}</p>
-              <span>Xem ngay →</span>
-            </a>
-          ))}
-        </div>
+      <section className="container community">
+        {socialLinks.map((item) => (
+          <p key={item.label}>
+            {item.prefix} <a href={item.href}>{item.label}</a> {item.suffix}
+          </p>
+        ))}
       </section>
 
-      <footer className="footer">
-        <div className="container footerInner">Copyright © 2024 Tamhongame.com</div>
-      </footer>
+      <footer className="footer">Copyright © 2024 Tamhongame.com</footer>
     </main>
   );
 }
