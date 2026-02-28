@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import { toast } from "@/lib/toast";
 
 export default function ImageField({ label, value, onChange }) {
   const inputRef = useRef(null);
@@ -14,8 +15,9 @@ export default function ImageField({ label, value, onChange }) {
     const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
     const data = await res.json();
     setBusy(false);
-    if (!res.ok) return alert(data.error || "Upload failed");
+    if (!res.ok) return toast.error(data.error || "Upload failed");
     onChange(data.url);
+    toast.success("Upload ảnh thành công");
   }
 
   function onDrop(e) {
