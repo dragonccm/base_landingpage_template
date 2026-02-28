@@ -1,9 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "TamHonGame | Tải game PC Việt Hoá miễn phí",
-  description:
-    "TamHonGame chia sẻ game PC Việt Hoá mới nhất với link tải tốc độ cao, hoàn toàn miễn phí.",
+  title: "GearVN Clone | Demo",
+  description: "Trang chủ tham khảo giao diện GearVN bằng Next.js",
 };
 
 export default function RootLayout({ children }) {

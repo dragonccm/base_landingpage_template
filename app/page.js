@@ -1,88 +1,131 @@
-const navItems = ["Home", "About", "Services", "Portfolio", "Pages", "Blog", "Contact"];
-
-const metrics = [
-  { value: "$2.5B+", label: "Assets Under Management" },
-  { value: "120+", label: "Startup Investments" },
-  { value: "38", label: "Global Partners" },
+const quickMenu = [
+  "Laptop",
+  "PC GVN",
+  "Màn hình",
+  "Bàn phím",
+  "Chuột",
+  "Tai nghe",
+  "Ghế gaming",
+  "Phụ kiện",
 ];
 
-const services = [
+const products = [
   {
-    title: "Venture Capital",
-    desc: "Funding ambitious founders from seed to growth stages.",
+    name: "Laptop Gaming MSI Katana 15 B13VFK",
+    price: "24.990.000₫",
+    oldPrice: "29.990.000₫",
+    tag: "Giảm 17%",
   },
   {
-    title: "Growth Advisory",
-    desc: "Strategic support to scale operations, hiring and go-to-market.",
+    name: "PC GVN i5 RTX 4060 - Ready To Play",
+    price: "21.490.000₫",
+    oldPrice: "23.990.000₫",
+    tag: "Bán chạy",
   },
   {
-    title: "M&A Strategy",
-    desc: "Deal sourcing, due diligence and value creation planning.",
+    name: "Màn hình LG UltraGear 27GS75Q-B 180Hz",
+    price: "6.490.000₫",
+    oldPrice: "7.390.000₫",
+    tag: "Hot",
+  },
+  {
+    name: "Chuột Logitech G Pro X Superlight 2",
+    price: "2.790.000₫",
+    oldPrice: "3.290.000₫",
+    tag: "Mới",
+  },
+  {
+    name: "Bàn phím cơ AKKO 5075B Plus",
+    price: "1.990.000₫",
+    oldPrice: "2.290.000₫",
+    tag: "Deal sốc",
+  },
+  {
+    name: "Tai nghe HyperX Cloud III Wireless",
+    price: "2.490.000₫",
+    oldPrice: "2.990.000₫",
+    tag: "Quà tặng",
   },
 ];
 
-export default function HomePage() {
+export default function Home() {
   return (
-    <main className="invested">
-      <header className="siteHeader">
-        <div className="container navWrap">
-          <a href="#" className="logo">Invested</a>
-          <nav>
-            <ul className="navList">
-              {navItems.map((item) => (
-                <li key={item}><a href="#">{item}</a></li>
-              ))}
-            </ul>
-          </nav>
-          <a href="#" className="ctaBtn">Get Consultation</a>
+    <main className="gearPage">
+      <div className="topSale">FREESHIP đơn từ 500K • Trả góp 0% • Bảo hành chính hãng</div>
+
+      <header className="header">
+        <div className="container headMain">
+          <a href="#" className="logo">GEARVN</a>
+          <div className="searchWrap">
+            <input placeholder="Bạn cần tìm gì hôm nay..." />
+            <button>Tìm kiếm</button>
+          </div>
+          <div className="headActions">
+            <a href="#">Hotline 1900.5301</a>
+            <a href="#">Giỏ hàng</a>
+          </div>
         </div>
       </header>
 
-      <section className="hero container">
-        <div className="heroText">
-          <p className="kicker">Smart Capital For Bold Founders</p>
-          <h1>Investing in Visionary Teams Building The Future</h1>
-          <p className="lead">
-            We are a venture capital and private equity firm helping high-potential
-            businesses unlock growth with strategic investment and hands-on guidance.
-          </p>
-          <div className="heroActions">
-            <a href="#" className="primary">Start a Project</a>
-            <a href="#" className="ghost">Watch Video</a>
-          </div>
+      <nav className="quickNav">
+        <div className="container quickWrap">
+          {quickMenu.map((item) => (
+            <a href="#" key={item}>{item}</a>
+          ))}
+        </div>
+      </nav>
+
+      <section className="container heroGrid">
+        <aside className="categoryCol">
+          <h3>Danh mục sản phẩm</h3>
+          <ul>
+            <li>Laptop Gaming</li>
+            <li>PC GVN</li>
+            <li>Main, CPU, VGA</li>
+            <li>Màn hình</li>
+            <li>Bàn phím, Chuột</li>
+            <li>Tai nghe, Loa</li>
+            <li>Ghế - Bàn Gaming</li>
+            <li>Phụ kiện công nghệ</li>
+          </ul>
+        </aside>
+
+        <div className="heroBanner">
+          <p className="badge">SIÊU SALE THÁNG 2</p>
+          <h1>Build PC - Săn Gear xịn Giá tốt mỗi ngày</h1>
+          <p>Ưu đãi lên đến 40% cho hàng loạt sản phẩm gaming gear và linh kiện.</p>
+          <a href="#">Mua ngay</a>
         </div>
 
-        <div className="heroVisual">
-          <div className="chartCard">
-            <p>Portfolio Growth</p>
-            <strong>+48.2%</strong>
-            <span>Year over year performance</span>
-          </div>
-          <div className="dot dot1" />
-          <div className="dot dot2" />
-        </div>
-      </section>
-
-      <section className="metrics container">
-        {metrics.map((item) => (
-          <article key={item.label}>
-            <h3>{item.value}</h3>
-            <p>{item.label}</p>
+        <div className="sideBanners">
+          <article>
+            <h4>Laptop RTX 50 Series</h4>
+            <p>Trả góp 0% • Quà tặng độc quyền</p>
           </article>
-        ))}
+          <article>
+            <h4>Màn hình 180Hz</h4>
+            <p>Giảm thêm đến 1.000.000₫</p>
+          </article>
+        </div>
       </section>
 
-      <section className="services container">
-        <div className="sectionHead">
-          <p>What We Do</p>
-          <h2>Financial Expertise Backed By Real Operator Experience</h2>
+      <section className="container productSection">
+        <div className="sectionTitle">
+          <h2>Sản phẩm nổi bật</h2>
+          <a href="#">Xem tất cả</a>
         </div>
-        <div className="serviceGrid">
-          {services.map((service) => (
-            <article key={service.title} className="serviceCard">
-              <h3>{service.title}</h3>
-              <p>{service.desc}</p>
-              <a href="#">Learn more →</a>
+
+        <div className="productGrid">
+          {products.map((p) => (
+            <article key={p.name} className="productCard">
+              <span className="tag">{p.tag}</span>
+              <div className="thumb">IMAGE</div>
+              <h3>{p.name}</h3>
+              <div className="priceRow">
+                <strong>{p.price}</strong>
+                <del>{p.oldPrice}</del>
+              </div>
+              <button>Thêm vào giỏ</button>
             </article>
           ))}
         </div>
