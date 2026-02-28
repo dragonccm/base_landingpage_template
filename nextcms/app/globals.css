@@ -14,7 +14,7 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 /* Landing */
-.landing{background:var(--bg,#f3f6fb);color:var(--txt,#101828);padding-bottom:20px}
+.landing{background:var(--bg,#f3f6fb);color:var(--txt,#101828)}
 .landing section[id], .landing footer[id]{scroll-margin-top:90px}
 .l-header{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:16px}.stickyHeader{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);border-bottom:1px solid #e8eef6}.l-logo{height:30px;object-fit:contain}.l-logoWrap{width:140px}
 .menuToggle{display:none;border:1px solid #c8d7e6;background:#fff;border-radius:8px;padding:6px 10px}
