@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { jwtDecrypt } from "jose";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET || "dev-secret");
 
@@ -7,7 +7,7 @@ export async function middleware(req) {
   const token = req.cookies.get("auth_token")?.value;
   if (!token) return NextResponse.redirect(new URL("/login", req.url));
   try {
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtDecrypt(token, secret);
     if (payload.role !== "admin") return NextResponse.redirect(new URL("/", req.url));
     return NextResponse.next();
   } catch {
