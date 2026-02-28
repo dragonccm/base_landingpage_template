@@ -1,11 +1,16 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLanding, fetchSettings } from "@/store/siteSlice";
+
+const goalIcons = ["🏳️", "👤", "🤝", "🌐"];
+const focusIcons = ["💳", "📈", "⚙️", "🔗"];
+const timelineIcons = ["🪪", "🏦", "💹", "👛", "🔬"];
 
 export default function Home() {
   const dispatch = useDispatch();
   const { landing, settings, loading } = useSelector((s) => s.site);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     dispatch(fetchLanding());
@@ -26,12 +31,14 @@ export default function Home() {
     [c.goal3Title, c.goal3Desc],
     [c.goal4Title, c.goal4Desc],
   ];
+
   const focuses = [
-    [c.focus1Title, c.focus1Desc],
-    [c.focus2Title, c.focus2Desc],
-    [c.focus3Title, c.focus3Desc],
-    [c.focus4Title, c.focus4Desc],
+    [c.focus1Label, c.focus1Title, c.focus1Desc],
+    [c.focus2Label, c.focus2Title, c.focus2Desc],
+    [c.focus3Label, c.focus3Title, c.focus3Desc],
+    [c.focus4Label, c.focus4Title, c.focus4Desc],
   ];
+
   const timeline = [
     [c.timeline1Title, c.timeline1Desc],
     [c.timeline2Title, c.timeline2Desc],
@@ -39,6 +46,7 @@ export default function Home() {
     [c.timeline4Title, c.timeline4Desc],
     [c.timeline5Title, c.timeline5Desc],
   ];
+
   const stats = [
     [c.stat1Value, c.stat1Label],
     [c.stat2Value, c.stat2Label],
@@ -50,44 +58,55 @@ export default function Home() {
     <main className="landing" style={{ "--primary": t.primaryColor, "--secondary": t.secondaryColor, "--txt": t.textColor, "--bg": t.bgColor, fontFamily: t.fontFamily }}>
       <header className="l-header container">
         <div className="l-logoWrap">{i.logoUrl ? <img src={i.logoUrl} alt="logo" className="l-logo" /> : <div className="logoFallback">N</div>}</div>
-        <nav className="l-nav">{navs.map((x) => <a key={x} href="#">{x}</a>)}</nav>
-        <button className="l-btn">{c.navCta}</button>
+        <button className="menuToggle" onClick={() => setMenuOpen((v) => !v)}>☰</button>
+        <nav className={`l-nav ${menuOpen ? "open" : ""}`}>{navs.map((x) => <a key={x} href="#">{x}</a>)}</nav>
+        <button className="l-btn hideMobile">{c.navCta}</button>
       </header>
 
       <section className="container l-hero">
-        <span className="l-badge">{c.heroBadge}</span>
-        <h1>{c.title}</h1>
-        <p>{c.subtitle}</p>
+        <div className="heroNet" />
+        <span className="l-badge">⭐ {c.heroBadge}</span>
+        <h1>{c.title.replace("TrustXLabs!", "")}<span>TrustXLabs!</span></h1>
+        <p dangerouslySetInnerHTML={{ __html: c.subtitle }} />
         <div className="l-rowCenter"><button className="l-btn">{c.cta}</button><button className="l-btn ghost">{c.cta2}</button></div>
         <div className="chipRow">{chips.map((x) => <span key={x}>{x}</span>)}</div>
       </section>
 
       <section className="container l-section center">
         <h2>{c.goalsTitle}</h2><p>{c.goalsSubtitle}</p>
-        <div className="l-grid4">{goals.map(([title, desc]) => <article key={title} className="l-card"><h3>{title}</h3><p>{desc}</p></article>)}</div>
+        <div className="l-grid4">{goals.map(([title, desc], idx) => <article key={title} className="l-card"><div className="iconBox">{goalIcons[idx]}</div><h3>{title}</h3><p>{desc}</p></article>)}</div>
       </section>
 
       <section className="container l-section split">
         <div>
           <h2>{c.functionsTitle}</h2>
-          <ul>{[c.function1, c.function2, c.function3, c.function4, c.function5].filter(Boolean).map((x) => <li key={x}>{x}</li>)}</ul>
+          <ul>{[c.function1, c.function2, c.function3, c.function4, c.function5, c.function6].filter(Boolean).map((x) => <li key={x}>{x}</li>)}</ul>
         </div>
-        <div className="artBox" />
+        <div className="artBox"><div className="diamond" /></div>
       </section>
 
       <section className="container l-section center">
         <h2>{c.focusTitle}</h2>
-        <div className="l-grid2">{focuses.map(([title, desc]) => <article key={title} className="l-card"><h3>{title}</h3><p>{desc}</p></article>)}</div>
+        <p>We focus on four key areas to deliver advanced financial technology solutions.</p>
+        <div className="l-grid2">{focuses.map(([label, title, desc], idx) => <article key={title} className="l-card"><small>{label}</small><div className="iconBox">{focusIcons[idx]}</div><h3>{title}</h3><p>{desc}</p></article>)}</div>
       </section>
 
       <section className="container l-section center">
         <h2>{c.researchTitle}</h2>
-        <div className="timeline">{timeline.map(([title, desc]) => <article key={title} className="l-card"><h3>{title}</h3><p>{desc}</p></article>)}</div>
+        <div className="timelineWrap">
+          <div className="timelineLine" />
+          {timeline.map(([title, desc], idx) => (
+            <article key={title} className={`timelineCard ${idx % 2 ? "right" : "left"}`}>
+              <div className="timelineDot" />
+              <div className="l-card"><div className="iconBox">{timelineIcons[idx]}</div><h3>{title}</h3><p>{desc}</p></div>
+            </article>
+          ))}
+        </div>
         <div className="stats">{stats.map(([value, label]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}</div>
       </section>
 
       <section className="container l-section">
-        <h2 className="center">{c.contactTitle}</h2>
+        <h2 className="center">Connect With <span>{i.siteTitle}</span></h2>
         <div className="contactGrid">
           <form className="l-card">
             <h3>{c.formTitle}</h3>
@@ -97,21 +116,23 @@ export default function Home() {
             <button className="l-btn" type="button">{c.submitText}</button>
           </form>
           <div className="rightInfo">
-            <div className="l-card"><strong>{c.addressTitle}:</strong> {c.addressText}</div>
-            <div className="l-card"><strong>{c.phoneTitle}:</strong> {c.phoneText}</div>
-            <div className="l-card"><strong>{c.supportEmailTitle}:</strong> {c.supportEmailText}</div>
-            <div className="l-card map" />
+            <div className="l-card"><strong>📍 {c.addressTitle}:</strong> {c.addressText}</div>
+            <div className="l-card"><strong>📞 {c.phoneTitle}:</strong> {c.phoneText}</div>
+            <div className="l-card"><strong>✉️ {c.supportEmailTitle}:</strong> {c.supportEmailText}</div>
+            <div className="l-card"><strong>🕐 {c.workTimeTitle}:</strong> {c.workTimeText}</div>
+            <iframe className="map" loading="lazy" referrerPolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=10.0302408,105.7689046&z=15&output=embed" />
           </div>
         </div>
       </section>
 
       <footer className="l-footer">
         <div className="container footCols">
-          <div><h3>{i.siteTitle}</h3><p>{c.footerText}</p></div>
-          <div><h4>{c.footerCol2Title}</h4><p>{(c.footerCol2Text || "").split("\n").map((x) => <span key={x}>{x}<br/></span>)}</p></div>
-          <div><h4>{c.footerCol3Title}</h4><p>{(c.footerCol3Text || "").split("\n").map((x) => <span key={x}>{x}<br/></span>)}</p></div>
-          <div><h4>{c.footerCol4Title}</h4><p>{(c.footerCol4Text || "").split("\n").map((x) => <span key={x}>{x}<br/></span>)}</p></div>
+          <div><h3>{i.siteTitle}</h3><p>{c.footerText}</p><p>● Facebook  ● LinkedIn  ● X  ● YouTube</p></div>
+          <div><h4>{c.footerCol2Title}</h4><p>{(c.footerCol2Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div>
+          <div><h4>{c.footerCol3Title}</h4><p>{(c.footerCol3Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div>
+          <div><h4>{c.footerCol4Title}</h4><p>{(c.footerCol4Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div>
         </div>
+        <div className="copy">© 2025 TrustXLabs, All Rights Reserved.</div>
       </footer>
     </main>
   );
