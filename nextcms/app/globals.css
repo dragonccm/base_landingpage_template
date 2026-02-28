@@ -26,7 +26,7 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 .l-hero{position:relative;text-align:center;padding:56px 0 28px;overflow:hidden}
 .heroNet{position:absolute;right:-60px;top:-30px;width:380px;height:240px;background:radial-gradient(circle,#d7ebff 1px,transparent 1px);background-size:18px 18px;opacity:.5;z-index:0}
 .l-hero>*{position:relative;z-index:1}
-.l-badge{display:inline-block;border:1px solid #97cff3;color:var(--primary);padding:6px 14px;border-radius:999px;font-size:12px;background:#eef4ff}
+.l-badge{display:inline-flex;align-items:center;gap:6px;border:1px solid #97cff3;color:var(--primary);padding:6px 14px;border-radius:999px;font-size:12px;background:#eef4ff}
 .l-hero h1{font-size:66px;line-height:1.04;margin:14px 0 10px;letter-spacing:.2px}
 .l-hero h1 span{color:var(--primary)}
 .l-hero p{max-width:840px;margin:0 auto;color:#606d84;line-height:1.75}
@@ -35,7 +35,7 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 .chipRow{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:14px}
 .chipRow span{border:1px solid #c7d7e8;background:#fff;border-radius:999px;padding:7px 12px;font-size:12px}
 
-.l-section{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:28px;margin-top:16px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.l-section{background:transparent;border:0;border-radius:0;padding:34px 0;margin-top:4px;box-shadow:none}
 .l-section.center{text-align:center}
 .l-section h2{font-size:52px;line-height:1.12;margin:4px 0 10px}
 .l-section h2 span{color:var(--primary)}
