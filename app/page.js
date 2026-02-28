@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLanding, fetchSettings } from "@/store/siteSlice";
-import { Flag, UserRound, Handshake, Globe, CreditCard, ChartNoAxesCombined, Cpu, Link2, IdCard, Building2, TrendingUp, Wallet, FlaskConical, MapPin, Phone, Mail, Clock3 } from "lucide-react";
+import { Flag, UserRound, Handshake, Globe, CreditCard, ChartNoAxesCombined, Cpu, Link2, IdCard, Building2, TrendingUp, Wallet, FlaskConical, MapPin, Phone, Mail, Clock3, Star } from "lucide-react";
 import { toast } from "@/lib/toast";
 
 const goalIcons = [Flag, UserRound, Handshake, Globe];
@@ -49,7 +49,7 @@ export default function Home() {
 
       <section className="container l-hero">
         <div className="heroNet" />
-        <span className="l-badge">⭐ {c.heroBadge}</span>
+        <span className="l-badge"><Star size={14} /> {c.heroBadge}</span>
         <h1>{c.title.replace("TrustXLabs!", "")}<span>TrustXLabs!</span></h1>
         <p dangerouslySetInnerHTML={{ __html: c.subtitle }} />
         <div className="l-rowCenter"><button className="l-btn">{c.cta}</button><button className="l-btn ghost">{c.cta2}</button></div>
