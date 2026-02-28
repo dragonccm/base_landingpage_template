@@ -13,6 +13,7 @@ export default function HomePage() {
   const [products, setProducts] = useState([]);
   const [user, setUser] = useState(null);
   const [cartCount, setCartCount] = useState(0);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetch("/api/products").then((r) => r.json()).then((d) => setProducts(d.products || []));
@@ -21,6 +22,13 @@ export default function HomePage() {
   }, []);
 
   const menu = useMemo(() => quickMenu, []);
+  const filteredProducts = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return products;
+    return products.filter(
+      (p) => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)
+    );
+  }, [products, search]);
 
   function addToCart(product) {
     const cart = getCart();
@@ -38,7 +46,14 @@ export default function HomePage() {
       <header className="headerMain">
         <div className="container headRow">
           <a className="logo" href="/">GEARVN</a>
-          <div className="searchWrap"><input placeholder="Bạn cần tìm gì hôm nay..." /><button>Tìm kiếm</button></div>
+          <div className="searchWrap">
+            <input
+              placeholder="Bạn cần tìm gì hôm nay..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <button>Tìm kiếm</button>
+          </div>
           <div className="rightActions">
             <a href="#">1900.5301</a>
             <a href="/cart">Giỏ hàng ({cartCount})</a>
@@ -58,9 +73,12 @@ export default function HomePage() {
       </section>
 
       <section className="container sectionProducts">
-        <div className="titleRow"><h2>Sản phẩm nổi bật</h2></div>
+        <div className="titleRow">
+          <h2>Sản phẩm nổi bật</h2>
+          {!!search && <span>Tìm thấy {filteredProducts.length} kết quả</span>}
+        </div>
         <div className="productGrid">
-          {products.map((p) => (
+          {filteredProducts.map((p) => (
             <article key={p.id} className="productCard">
               <img src={p.image} alt={p.name} />
               <h3>{p.name}</h3>
@@ -71,6 +89,7 @@ export default function HomePage() {
             </article>
           ))}
         </div>
+        {filteredProducts.length === 0 && <p>Không tìm thấy sản phẩm phù hợp.</p>}
       </section>
     </main>
   );
