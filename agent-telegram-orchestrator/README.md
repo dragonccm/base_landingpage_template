@@ -12,6 +12,7 @@ Hệ thống điều phối nhiều agent thông qua lệnh chat Telegram.
 - `/brainstorm`
 - `/plan`
 - `/code:auto`
+- `/cook` (all-in-one -> source project)
 - `/debug`
 - `/code:review`
 - `/watzup`
@@ -50,6 +51,7 @@ Dashboard hỗ trợ:
 - xem timeline run
 - xem artifacts của từng run
 - trigger command trực tiếp từ giao diện
+- dùng `/cook` để sinh source project tại `generated-projects/`
 
 Nếu đặt `WEB_DASHBOARD_TOKEN`, dashboard API yêu cầu header:
 `Authorization: Bearer <token>`

@@ -2,6 +2,7 @@ import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { buildRoleTask } from "./prompts.mjs";
 import { validateCodeAutoRoleRuns } from "./validators.mjs";
+import { scaffoldProject } from "./projectScaffold.mjs";
 
 function hasLiveErrors(roleRuns) {
   return roleRuns.some((r) => (r.result || "").includes("[LIVE_ERROR]"));
@@ -50,6 +51,55 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
           name: "project-health.md",
           content: `# Project Health\n\n## Workflow Runs\n- brainstorm: ${stats["brainstorm"]}\n- plan: ${stats["plan"]}\n- code:auto: ${stats["code-auto"]}\n- code:review: ${stats["code-review"]}\n- debug: ${stats["debug"]}\n\n## Tracker Summary\n${tracker.result}\n`
         }
+      ]
+    };
+  }
+
+  if (cmd === "cook") {
+    const requirement = await openclaw.spawn({
+      role: "requirements",
+      runtime: "subagent",
+      task: buildRoleTask({ role: "requirements", command: "brainstorm", input, projectContext })
+    });
+
+    const planRun = await openclaw.spawn({
+      role: "planner",
+      runtime: "subagent",
+      task: buildRoleTask({ role: "planner", command: "plan", input, projectContext })
+    });
+
+    const scaffold = await scaffoldProject({
+      baseDir: process.cwd(),
+      requestText: input.freeText,
+      stackHint: input.args.stack
+    });
+
+    const dev = await openclaw.spawn({
+      role: "developer",
+      runtime: "acp",
+      task: `${buildRoleTask({ role: "developer", command: "code:auto", input, projectContext })}\nTarget project path: ${scaffold.projectDir}`
+    });
+    const tester = await openclaw.spawn({
+      role: "tester",
+      runtime: "acp",
+      task: `${buildRoleTask({ role: "tester", command: "code:auto", input, projectContext })}\nTarget project path: ${scaffold.projectDir}`
+    });
+    const reviewer = await openclaw.spawn({
+      role: "reviewer",
+      runtime: "subagent",
+      task: `${buildRoleTask({ role: "reviewer", command: "code:review", input, projectContext })}\nTarget project path: ${scaffold.projectDir}`
+    });
+    const docs = await openclaw.spawn({
+      role: "docs",
+      runtime: "subagent",
+      task: `${buildRoleTask({ role: "docs", command: "code:auto", input, projectContext })}\nTarget project path: ${scaffold.projectDir}`
+    });
+
+    return {
+      summary: `Cook completed. Generated ${scaffold.stack} project at ${path.relative(process.cwd(), scaffold.projectDir)}.`,
+      files: [
+        { name: "cook-summary.md", content: `# Cook Summary\n\n## Requirement\n${requirement.result}\n\n## Plan\n${planRun.result}\n\n## Delivery\n- Stack: ${scaffold.stack}\n- Project: ${scaffold.projectName}\n- Path: ${scaffold.projectDir}\n` },
+        { name: "project-output.md", content: `# Project Output\n\nProject folder: ${scaffold.projectDir}\n\n## Agent Execution\n- Developer: ${dev.result}\n- Tester: ${tester.result}\n- Reviewer: ${reviewer.result}\n- Docs: ${docs.result}\n\n## Run\n1. cd \"${scaffold.projectDir}\"\n2. npm install\n3. Follow README.md\n` }
       ]
     };
   }

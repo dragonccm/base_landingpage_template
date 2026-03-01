@@ -48,6 +48,11 @@
     "roles": ["tracker"],
     "artifacts": ["project-health.md"]
   },
+  "cook": {
+    "runtime": "hybrid",
+    "roles": ["requirements", "planner", "developer", "tester", "reviewer", "docs"],
+    "artifacts": ["cook-summary.md", "project-output.md"]
+  },
   "clear": {
     "runtime": "local",
     "roles": [],

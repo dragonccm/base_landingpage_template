@@ -11,6 +11,10 @@ export function validateCommandInput(command, { args, freeText }) {
     return "Missing required arg: phase (example: /code:auto phase=1)";
   }
 
+  if (command === "cook" && !freeText) {
+    return "Please describe what to build (example: /cook create app quản lý chi tiêu android bằng react native)";
+  }
+
   if (command === "brainstorm" && !freeText) {
     return "Please provide idea/context after /brainstorm";
   }

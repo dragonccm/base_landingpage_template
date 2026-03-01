@@ -131,7 +131,28 @@
 
 ---
 
-## 8. /clear
+## 8. /cook
+**Mục đích:** all-in-one từ yêu cầu đến project source chạy được.
+
+**Args:**
+- free text yêu cầu dự án
+- `stack` (optional: react-native|nextjs|react|node)
+
+**Agent flow:**
+- Requirements -> Planner -> Developer -> Tester -> Reviewer -> Docs
+- Auto scaffold source project theo loại app/web/backend
+
+**Artifacts:**
+- `artifacts/cook/<run>/cook-summary.md`
+- `artifacts/cook/<run>/project-output.md`
+
+**Output chính:**
+- thư mục project tại `generated-projects/<project-name>`
+- README + RUNBOOK để chạy local
+
+---
+
+## 9. /clear
 **Mục đích:** reset context phiên làm việc.
 
 **Hành vi:**
