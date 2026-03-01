@@ -222,8 +222,34 @@ export async function ensureSchema() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id TEXT PRIMARY KEY,
+      actor_id TEXT,
+      actor_email TEXT,
+      actor_role TEXT,
+      action TEXT NOT NULL,
+      target TEXT,
+      status TEXT NOT NULL DEFAULT 'success',
+      ip TEXT,
+      user_agent TEXT,
+      details JSONB,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
     ALTER TABLE users ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'active';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+    ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS id TEXT;
+    ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS actor_id TEXT;
+    ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS actor_email TEXT;
+    ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS actor_role TEXT;
+    ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS action TEXT;
+    ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS target TEXT;
+    ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'success';
+    ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS ip TEXT;
+    ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS user_agent TEXT;
+    ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS details JSONB;
+    ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
   `);
 
   await upsertKey("landing", await getKey("landing", defaultLanding));
@@ -366,6 +392,44 @@ export async function countRecentFailedAttempts(email, minutes = 30) {
   return rows[0]?.c || 0;
 }
 
+export async function createAuditLog({ actorId, actorEmail, actorRole, action, target, status = "success", ip, userAgent, details }) {
+  await ensureSchema();
+  await pool.query(
+    `INSERT INTO audit_logs (id, actor_id, actor_email, actor_role, action, target, status, ip, user_agent, details, created_at)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,NOW())`,
+    [
+      `al_${crypto.randomUUID()}`,
+      actorId || null,
+      actorEmail || null,
+      actorRole || null,
+      action,
+      target || null,
+      status,
+      ip || null,
+      userAgent || null,
+      details ? JSON.stringify(details) : null,
+    ]
+  );
+}
+
+export async function listAuditLogs(limit = 300) {
+  await ensureSchema();
+  const safeLimit = Math.max(1, Math.min(Number(limit) || 300, 1000));
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, actor_id, actor_email, actor_role, action, target, status, ip, user_agent, details, created_at
+       FROM audit_logs
+       ORDER BY created_at DESC
+       LIMIT $1`,
+      [safeLimit]
+    );
+    return rows;
+  } catch {
+    // older schema or unavailable columns
+    return [];
+  }
+}
+
 export async function exportBackupData() {
   await ensureSchema();
   const [users, siteContent, contacts, attempts] = await Promise.all([
@@ -375,12 +439,22 @@ export async function exportBackupData() {
     pool.query("SELECT id,email,ip,success,created_at FROM auth_attempts ORDER BY created_at DESC LIMIT 5000"),
   ]);
 
+  let auditLogs = [];
+  try {
+    const r = await pool.query("SELECT id,actor_id,actor_email,actor_role,action,target,status,ip,user_agent,details,created_at FROM audit_logs ORDER BY created_at DESC LIMIT 20000");
+    auditLogs = r.rows;
+  } catch {
+    // keep backup working even when audit schema is old/missing
+    auditLogs = [];
+  }
+
   return {
     exportedAt: new Date().toISOString(),
     users: users.rows,
     siteContent: siteContent.rows,
     contactSubmissions: contacts.rows,
     authAttempts: attempts.rows,
+    auditLogs,
   };
 }
 

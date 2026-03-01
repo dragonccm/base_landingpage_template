@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { createUser, listUsers, updateUserStatus, deleteUser, findUserByEmail } from "@/lib/db";
-import { requireSuperAdmin } from "@/lib/auth";
+import { requireAdmin, requireSuperAdmin } from "@/lib/auth";
+import { auditAdminAction } from "@/lib/audit";
 
-export async function GET() {
-  const guard = await requireSuperAdmin();
+export async function GET(req) {
+  const guard = await requireAdmin();
   if (guard.error) return guard.error;
+  await auditAdminAction(req, guard.user, "users.read", "users");
   return NextResponse.json({ items: await listUsers() });
 }
 
@@ -19,8 +21,9 @@ export async function POST(req) {
   if (exist) return NextResponse.json({ error: "Email already exists" }, { status: 400 });
 
   const passwordHash = await bcrypt.hash(password, 10);
+  const userId = `u_${crypto.randomUUID()}`;
   await createUser({
-    id: `u_${crypto.randomUUID()}`,
+    id: userId,
     name,
     email: String(email).toLowerCase(),
     passwordHash,
@@ -28,6 +31,7 @@ export async function POST(req) {
     status: "active",
   });
 
+  await auditAdminAction(req, guard.user, "users.create", "users", { userId, email: String(email).toLowerCase(), role });
   return NextResponse.json({ ok: true });
 }
 
@@ -45,5 +49,6 @@ export async function PATCH(req) {
   else if (action === "delete") await deleteUser(id);
   else return NextResponse.json({ error: "Invalid action" }, { status: 400 });
 
+  await auditAdminAction(req, guard.user, "users.action", "users", { userId: id, action });
   return NextResponse.json({ ok: true });
 }

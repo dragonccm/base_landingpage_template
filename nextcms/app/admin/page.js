@@ -6,7 +6,7 @@ import ImageField from "@/components/ImageField";
 import { toast } from "@/lib/toast";
 import { Trash2 } from "lucide-react";
 
-const tabs = ["dashboard", "landing", "seo", "identity", "smtp", "security", "media", "contacts", "users", "backup"];
+const tabs = ["dashboard", "landing", "seo", "identity", "smtp", "security", "media", "contacts", "users", "backup", "audit"];
 
 export default function Admin() {
   const dispatch = useDispatch();
@@ -14,8 +14,17 @@ export default function Admin() {
   const [upload, setUpload] = useState({ url: "", name: "", alt: "" });
   const [saving, setSaving] = useState(false);
   const [userForm, setUserForm] = useState({ name: "", email: "", password: "", role: "admin" });
+  const [backups, setBackups] = useState([]);
+  const [backupLoading, setBackupLoading] = useState(false);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [auditLoading, setAuditLoading] = useState(false);
 
   useEffect(() => { dispatch(fetchAdminData()); }, [dispatch]);
+
+  useEffect(() => {
+    if (active === "backup") loadBackups();
+    if (active === "audit") loadAuditLogs();
+  }, [active]);
 
   const setLandingField = (group, key, value) => dispatch(setLandingState({ ...landing, [group]: { ...landing[group], [key]: value } }));
   const setSettingsField = (group, key, value) => dispatch(setSettingsState({ ...settings, [group]: { ...settings[group], [key]: value } }));
@@ -86,11 +95,38 @@ export default function Admin() {
     dispatch(fetchAdminData());
   }
 
+  async function loadBackups() {
+    setBackupLoading(true);
+    const res = await fetch("/api/admin/backup");
+    const data = await res.json().catch(() => ({}));
+    setBackups(data.items || []);
+    setBackupLoading(false);
+  }
+
   async function createBackup() {
     const res = await fetch("/api/admin/backup", { method: "POST" });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) return toast.error(data.error || "Backup thất bại");
     toast.success(`Backup xong: ${data.backupPath}`);
+    await loadBackups();
+  }
+
+  async function deleteBackup(id) {
+    const ok = confirm(`Xoá backup ${id}?`);
+    if (!ok) return;
+    const res = await fetch(`/api/admin/backup?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return toast.error(data.error || "Xoá backup thất bại");
+    toast.info("Đã xoá backup");
+    await loadBackups();
+  }
+
+  async function loadAuditLogs() {
+    setAuditLoading(true);
+    const res = await fetch("/api/admin/audit-logs?limit=500");
+    const data = await res.json().catch(() => ({}));
+    setAuditLogs(data.items || []);
+    setAuditLoading(false);
   }
 
   const stats = useMemo(() => ({
@@ -129,7 +165,9 @@ export default function Admin() {
 
         {active === "users" && <><form className="card" onSubmit={createAdminUser}><h3>User Management (super admin)</h3><div className="grid2"><input placeholder="name" value={userForm.name} onChange={(e) => setUserForm({ ...userForm, name: e.target.value })} /><input placeholder="email" value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} /><input placeholder="password" type="password" value={userForm.password} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} /><select value={userForm.role} onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}><option value="admin">admin</option><option value="super_admin">super_admin</option></select></div><button className="btn">Create user</button></form><div className="card"><h3>Users</h3>{(users || []).map((u) => <div key={u.id} className="row" style={{ justifyContent: "space-between", borderBottom: "1px solid #ddd", padding: "8px 0" }}><span>{u.name} ({u.email}) - {u.role} - {u.status}</span><div className="row"><button className="btn ghostBtn" onClick={() => userAction(u.id, "activate")}>Activate</button><button className="btn ghostBtn" onClick={() => userAction(u.id, "block")}>Block</button><button className="deleteBtn" onClick={() => userAction(u.id, "delete")}>Delete</button></div></div>)}</div></>}
 
-        {active === "backup" && <div className="card"><h3>Backup toàn diện</h3><p>Tạo snapshot dữ liệu DB + bản sao thư mục uploads vào /backups/timestamp</p><button className="btn" onClick={createBackup}>Create Backup</button></div>}
+        {active === "backup" && <div className="card"><h3>Backup toàn diện</h3><p>Tạo snapshot dữ liệu DB + bản sao thư mục uploads vào /backups/timestamp</p><div className="row"><button className="btn" onClick={createBackup}>Create Backup</button><button className="btn ghostBtn" onClick={loadBackups}>Refresh</button></div><div style={{ marginTop: 12, display: "grid", gap: 8 }}>{backupLoading && <small>Đang tải danh sách backup...</small>}{!backupLoading && backups.length === 0 && <small>Chưa có backup nào.</small>}{backups.map((b) => <div key={b.id} className="row" style={{ justifyContent: "space-between", borderBottom: "1px solid #eee", paddingBottom: 8 }}><div><strong>{b.id}</strong><div><small>{new Date(b.createdAt).toLocaleString()}</small></div><div><small>{b.path}</small></div></div><button className="deleteBtn" style={{ marginTop: 0, maxWidth: 140 }} onClick={() => deleteBackup(b.id)}>Xoá backup</button></div>)}</div></div>}
+
+        {active === "audit" && <div className="card"><h3>Audit log quản trị</h3><p>Ghi nhận mọi thao tác admin/super admin gần đây.</p><div className="row"><button className="btn ghostBtn" onClick={loadAuditLogs}>Refresh</button></div><div style={{ marginTop: 12, overflowX: "auto" }}>{auditLoading && <small>Đang tải audit log...</small>}{!auditLoading && auditLogs.length === 0 && <small>Chưa có log.</small>}{!auditLoading && auditLogs.length > 0 && <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}><thead><tr><th align="left">Time</th><th align="left">Actor</th><th align="left">Action</th><th align="left">Target</th><th align="left">Status</th><th align="left">IP</th></tr></thead><tbody>{auditLogs.map((x) => <tr key={x.id} style={{ borderTop: "1px solid #eee" }}><td>{new Date(x.created_at).toLocaleString()}</td><td>{x.actor_email || x.actor_id || "-"}</td><td>{x.action}</td><td>{x.target || "-"}</td><td>{x.status}</td><td>{x.ip || "-"}</td></tr>)}</tbody></table>}</div></div>}
       </section>
     </main>
   );
