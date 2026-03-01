@@ -1,0 +1,56 @@
+{
+  "docs:init": {
+    "runtime": "subagent",
+    "roles": ["scout"],
+    "artifacts": [
+      "codebase-summary.md",
+      "code-standards.md",
+      "system-architecture.md"
+    ]
+  },
+  "brainstorm": {
+    "runtime": "subagent",
+    "roles": ["requirements"],
+    "artifacts": ["requirements-spec.md", "open-questions.md"]
+  },
+  "plan": {
+    "runtime": "subagent",
+    "roles": ["planner", "researcher"],
+    "parallel": true,
+    "artifacts": ["implementation-plan.md", "risk-register.md"]
+  },
+  "code:auto": {
+    "runtime": "acp",
+    "roles": ["developer", "tester", "reviewer", "docs"],
+    "gates": ["build", "tests", "security", "docs"],
+    "artifacts": ["dev-report.md", "test-report.md", "review-report.md", "docs-update.md"]
+  },
+  "debug": {
+    "runtime": "acp",
+    "roles": ["debugger"],
+    "artifacts": ["root-cause-analysis.md", "regression-tests.md", "fix-plan.md"]
+  },
+  "code:review": {
+    "runtime": "subagent",
+    "roles": [
+      "architecture-reviewer",
+      "security-reviewer",
+      "performance-reviewer",
+      "testing-reviewer",
+      "quality-reviewer",
+      "documentation-reviewer"
+    ],
+    "parallel": true,
+    "artifacts": ["review-summary.md"]
+  },
+  "watzup": {
+    "runtime": "subagent",
+    "roles": ["tracker"],
+    "artifacts": ["project-health.md"]
+  },
+  "clear": {
+    "runtime": "local",
+    "roles": [],
+    "artifacts": []
+  }
+}
