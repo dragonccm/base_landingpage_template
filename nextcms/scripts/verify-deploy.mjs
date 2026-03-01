@@ -63,6 +63,9 @@ async function main() {
   const publicSettings = await call('/api/settings');
   addCheck('Public API /api/settings', publicSettings.ok, `status=${publicSettings.status}`);
 
+  const publicBlog = await call('/api/blog/posts');
+  addCheck('Public API /api/blog/posts', publicBlog.ok, `status=${publicBlog.status}`);
+
   if (!adminEmail || !adminPassword) {
     console.log('ℹ️ Skip admin checks (missing VERIFY_ADMIN_EMAIL / VERIFY_ADMIN_PASSWORD).');
   } else {

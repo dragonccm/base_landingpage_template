@@ -1,3 +1,5 @@
+"use client";
+
 export default function Header({ i, navs, c, menuOpen, setMenuOpen }) {
   return (
     <header className="stickyHeader">

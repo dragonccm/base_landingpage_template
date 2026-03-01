@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
-import { requireAdmin } from "@/lib/auth";
+import { requirePostEditor } from "@/lib/auth";
+import { getMedia, saveMedia } from "@/lib/db";
 import { auditAdminAction } from "@/lib/audit";
 
 export async function POST(req) {
-  const guard = await requireAdmin();
+  const guard = await requirePostEditor();
   if (guard.error) return guard.error;
 
   try {
@@ -26,13 +27,31 @@ export async function POST(req) {
     await mkdir(uploadDir, { recursive: true });
     await writeFile(path.join(uploadDir, filename), buffer);
 
+    const uploadedUrl = `/uploads/${filename}`;
+    const uploadedType = isVideo ? "video" : "image";
+
+    const media = await getMedia();
+    const existed = media.some((m) => m.url === uploadedUrl);
+    if (!existed) {
+      media.unshift({
+        id: `m_${crypto.randomUUID()}`,
+        url: uploadedUrl,
+        name: file.name || filename,
+        alt: "",
+        type: uploadedType,
+        createdAt: new Date().toISOString(),
+      });
+      await saveMedia(media);
+    }
+
     await auditAdminAction(req, guard.user, "upload.create", "upload", {
       filename,
       mimeType: file.type || null,
       size: typeof file.size === "number" ? file.size : null,
+      registeredInMedia: true,
     });
 
-    return NextResponse.json({ ok: true, url: `/uploads/${filename}`, type: isVideo ? "video" : "image" });
+    return NextResponse.json({ ok: true, url: uploadedUrl, type: uploadedType });
   } catch {
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }

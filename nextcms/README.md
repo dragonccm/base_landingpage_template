@@ -31,6 +31,7 @@ npm run dev
 npm run build
 npm run start
 npm run migrate:audit
+npm run migrate:blog
 npm run verify:deploy
 ```
 

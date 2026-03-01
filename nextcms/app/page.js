@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLanding, fetchSettings } from "@/store/siteSlice";
-import { Flag, UserRound, Handshake, Globe, CreditCard, ChartNoAxesCombined, Cpu, Link2, IdCard, Building2, TrendingUp, Wallet, FlaskConical, ArrowUp } from "lucide-react";
+import { Flag, UserRound, Handshake, Globe, CreditCard, ChartNoAxesCombined, Cpu, Link2, IdCard, Building2, TrendingUp, Wallet, FlaskConical } from "lucide-react";
 import { toast } from "@/lib/toast";
 import Header from "@/components/sections/Header";
 import HeroSection from "@/components/sections/HeroSection";
@@ -20,16 +20,11 @@ export default function Home() {
   const { landing, settings, loading } = useSelector((s) => s.site);
   const [menuOpen, setMenuOpen] = useState(false);
   const [sending, setSending] = useState(false);
-  const [showTop, setShowTop] = useState(false);
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", message: "" });
 
   useEffect(() => { dispatch(fetchLanding()); dispatch(fetchSettings()); }, [dispatch]);
 
   useEffect(() => {
-    const onScroll = () => setShowTop(window.scrollY > 420);
-    window.addEventListener("scroll", onScroll);
-    onScroll();
-
     const observer = new IntersectionObserver(
       (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add("inview")),
       { threshold: 0.12 }
@@ -37,7 +32,6 @@ export default function Home() {
     document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
       observer.disconnect();
     };
   }, [landing]);
@@ -68,7 +62,7 @@ export default function Home() {
     { label: c.nav3, href: "#focus" },
     { label: c.nav4, href: "#research" },
     { label: c.nav5, href: "#contact" },
-    { label: c.nav6, href: "#footer" },
+    { label: c.nav6, href: "/blog" },
   ].filter((x) => x.label);
   const chips = [c.chip1, c.chip2, c.chip3, c.chip4].filter(Boolean);
   const goals = [[c.goal1Title, c.goal1Desc], [c.goal2Title, c.goal2Desc], [c.goal3Title, c.goal3Desc], [c.goal4Title, c.goal4Desc]];
@@ -91,7 +85,6 @@ export default function Home() {
       <ContactSection c={c} companyName={companyName} form={form} setForm={setForm} submitContact={submitContact} sending={sending} />
       <FooterSection c={c} i={i} />
 
-      {showTop && <button className="backTop" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><ArrowUp size={18} /></button>}
     </main>
   );
 }

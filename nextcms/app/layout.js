@@ -2,6 +2,7 @@ import "./globals.css";
 import { getSettings } from "@/lib/db";
 import Providers from "./providers";
 import ToastViewport from "./ToastViewport";
+import BackToTop from "@/components/BackToTop";
 
 export async function generateMetadata() {
   const settings = await getSettings();
@@ -28,7 +29,7 @@ export async function generateMetadata() {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body><Providers>{children}<ToastViewport /></Providers></body>
+      <body><Providers>{children}<BackToTop /><ToastViewport /></Providers></body>
     </html>
   );
 }

@@ -257,6 +257,7 @@ Nếu có endpoint fail script sẽ exit code 1 để gắn CI/CD.
 git pull
 npm install
 npm run migrate:audit
+npm run migrate:blog
 rm -rf .next
 npm run build
 pm2 restart nextcms

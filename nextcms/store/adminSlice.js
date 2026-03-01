@@ -12,12 +12,13 @@ async function safeJson(url, fallback) {
 }
 
 export const fetchAdminData = createAsyncThunk("admin/fetch", async () => {
-  const [landing, settings, media, contacts, users] = await Promise.all([
+  const [landing, settings, media, contacts, users, posts] = await Promise.all([
     safeJson("/api/admin/landing", { data: null }),
     safeJson("/api/admin/settings", { data: null }),
     safeJson("/api/admin/media", { items: [] }),
     safeJson("/api/admin/contacts", { items: [] }),
     safeJson("/api/admin/users", { items: [] }),
+    safeJson("/api/admin/posts", { items: [] }),
   ]);
   return {
     landing: landing.data,
@@ -25,12 +26,13 @@ export const fetchAdminData = createAsyncThunk("admin/fetch", async () => {
     media: media.items || [],
     contacts: contacts.items || [],
     users: users.items || [],
+    posts: posts.items || [],
   };
 });
 
 const adminSlice = createSlice({
   name: "admin",
-  initialState: { landing: null, settings: null, media: [], contacts: [], users: [], active: "dashboard", loading: false },
+  initialState: { landing: null, settings: null, media: [], contacts: [], users: [], posts: [], active: "dashboard", loading: false },
   reducers: {
     setActiveTab: (s, a) => { s.active = a.payload; },
     setLandingState: (s, a) => { s.landing = a.payload; },
@@ -46,6 +48,7 @@ const adminSlice = createSlice({
         s.media = a.payload.media;
         s.contacts = a.payload.contacts;
         s.users = a.payload.users;
+        s.posts = a.payload.posts;
       })
       .addCase(fetchAdminData.rejected, (s) => { s.loading = false; });
   },

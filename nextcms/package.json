@@ -11,6 +11,7 @@
     "sync:media": "node scripts/sync-media.mjs",
     "backup": "node scripts/backup.mjs",
     "migrate:audit": "node scripts/migrate-audit.mjs",
+    "migrate:blog": "node scripts/migrate-blog.mjs",
     "verify:deploy": "node scripts/verify-deploy.mjs",
     "new:site": "node scripts/new-site.mjs"
   },

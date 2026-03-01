@@ -6,7 +6,7 @@ function isVideoUrl(url = "") {
   return /\.(mp4|webm|mov)$/i.test(url);
 }
 
-export default function ImageField({ label, value, onChange, mediaType = "any" }) {
+export default function ImageField({ label, value, onChange, mediaType = "any", onUploaded }) {
   const inputRef = useRef(null);
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -21,6 +21,7 @@ export default function ImageField({ label, value, onChange, mediaType = "any" }
     setBusy(false);
     if (!res.ok) return toast.error(data.error || "Upload failed");
     onChange(data.url, data.type);
+    onUploaded?.(data);
     toast.success(data.type === "video" ? "Upload video thành công" : "Upload ảnh thành công");
   }
 

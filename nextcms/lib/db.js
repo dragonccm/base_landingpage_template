@@ -250,6 +250,66 @@ export async function ensureSchema() {
     ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS user_agent TEXT;
     ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS details JSONB;
     ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+    CREATE TABLE IF NOT EXISTS post_categories (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      slug TEXT UNIQUE NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS post_tags (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      slug TEXT UNIQUE NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS posts (
+      id TEXT PRIMARY KEY,
+      slug TEXT UNIQUE NOT NULL,
+      title TEXT NOT NULL,
+      excerpt TEXT,
+      content_json JSONB,
+      content_html TEXT,
+      cover_image TEXT,
+      status TEXT NOT NULL DEFAULT 'draft',
+      category_id TEXT REFERENCES post_categories(id) ON DELETE SET NULL,
+      author_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+      published_at TIMESTAMPTZ,
+      scheduled_at TIMESTAMPTZ,
+      seo_title TEXT,
+      seo_description TEXT,
+      seo_image TEXT,
+      is_featured BOOLEAN NOT NULL DEFAULT false,
+      view_count INT NOT NULL DEFAULT 0,
+      search_vector tsvector,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS post_tag_map (
+      post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+      tag_id TEXT NOT NULL REFERENCES post_tags(id) ON DELETE CASCADE,
+      PRIMARY KEY (post_id, tag_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS post_revisions (
+      id TEXT PRIMARY KEY,
+      post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+      title TEXT,
+      excerpt TEXT,
+      content_json JSONB,
+      content_html TEXT,
+      created_by TEXT REFERENCES users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_posts_status_published ON posts(status, published_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_posts_author_id ON posts(author_id);
+    CREATE INDEX IF NOT EXISTS idx_posts_search_vector ON posts USING GIN(search_vector);
   `);
 
   await upsertKey("landing", await getKey("landing", defaultLanding));
@@ -430,13 +490,287 @@ export async function listAuditLogs(limit = 300) {
   }
 }
 
+function normalizeSlug(input) {
+  return String(input || "")
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+async function ensureUniqueSlugByTable(table, slug, ignoreId = null) {
+  const base = normalizeSlug(slug) || `item-${Date.now()}`;
+  let candidate = base;
+  let i = 1;
+  while (true) {
+    const sql = `SELECT id FROM ${table} WHERE slug=$1` + (ignoreId ? " AND id<>$2" : "") + " LIMIT 1";
+    const { rows } = await pool.query(sql, ignoreId ? [candidate, ignoreId] : [candidate]);
+    if (!rows.length) return candidate;
+    candidate = `${base}-${i++}`;
+  }
+}
+
+async function ensureUniquePostSlug(slug, ignoreId = null) {
+  return ensureUniqueSlugByTable("posts", slug, ignoreId);
+}
+
+export async function listPostsAdmin({ q = "", status, category, tag, authorId, dateFrom, dateTo, sort = "newest", page = 1, limit = 20 } = {}) {
+  await ensureSchema();
+  const clauses = [];
+  const values = [];
+  let idx = 1;
+  let qIndex = null;
+
+  if (status) { clauses.push(`p.status = $${idx++}`); values.push(status); }
+  if (category) { clauses.push(`c.slug = $${idx++}`); values.push(category); }
+  if (authorId) { clauses.push(`p.author_id = $${idx++}`); values.push(authorId); }
+  if (dateFrom) { clauses.push(`p.published_at >= $${idx++}`); values.push(dateFrom); }
+  if (dateTo) { clauses.push(`p.published_at <= $${idx++}`); values.push(dateTo); }
+  if (tag) { clauses.push(`EXISTS (SELECT 1 FROM post_tag_map ptm JOIN post_tags t ON t.id=ptm.tag_id WHERE ptm.post_id=p.id AND t.slug=$${idx++})`); values.push(tag); }
+  if (q) {
+    qIndex = idx;
+    clauses.push(`p.search_vector @@ websearch_to_tsquery('simple', $${idx++})`);
+    values.push(q);
+  }
+
+  const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+  const orderBy = sort === "oldest"
+    ? "p.created_at ASC"
+    : sort === "popular"
+      ? "p.view_count DESC, p.published_at DESC NULLS LAST"
+      : (q && qIndex)
+        ? `ts_rank_cd(p.search_vector, websearch_to_tsquery('simple', $${qIndex})) DESC, p.published_at DESC NULLS LAST`
+        : "p.created_at DESC";
+
+  const safeLimit = Math.max(1, Math.min(Number(limit) || 20, 100));
+  const safePage = Math.max(1, Number(page) || 1);
+  const offset = (safePage - 1) * safeLimit;
+
+  const query = `
+    SELECT p.id, p.slug, p.title, p.excerpt, p.content_html, p.cover_image, p.status, p.published_at, p.created_at, p.updated_at,
+           p.is_featured, p.view_count,
+           c.id as category_id, c.name as category_name, c.slug as category_slug,
+           u.id as author_id, u.name as author_name,
+           COALESCE(json_agg(DISTINCT jsonb_build_object('id', t.id, 'name', t.name, 'slug', t.slug)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS tags
+    FROM posts p
+    LEFT JOIN post_categories c ON c.id = p.category_id
+    LEFT JOIN users u ON u.id = p.author_id
+    LEFT JOIN post_tag_map ptm ON ptm.post_id = p.id
+    LEFT JOIN post_tags t ON t.id = ptm.tag_id
+    ${where}
+    GROUP BY p.id, c.id, u.id
+    ORDER BY ${orderBy}
+    LIMIT ${safeLimit} OFFSET ${offset}
+  `;
+
+  const { rows } = await pool.query(query, values);
+  if (rows.length || !q) return rows;
+
+  const fallback = await pool.query(
+    `SELECT p.id, p.slug, p.title, p.excerpt, p.content_html, p.cover_image, p.status, p.published_at, p.created_at, p.updated_at,
+            p.is_featured, p.view_count,
+            c.id as category_id, c.name as category_name, c.slug as category_slug,
+            u.id as author_id, u.name as author_name,
+            '[]'::json as tags
+     FROM posts p
+     LEFT JOIN post_categories c ON c.id = p.category_id
+     LEFT JOIN users u ON u.id = p.author_id
+     WHERE (p.title ILIKE $1 OR p.excerpt ILIKE $1 OR p.content_html ILIKE $1)
+     ORDER BY p.published_at DESC NULLS LAST
+     LIMIT $2`,
+    [`%${q}%`, safeLimit]
+  );
+  return fallback.rows;
+}
+
+export async function listPostsPublic({ q = "", category, tag, page = 1, limit = 12, sort = "newest" } = {}) {
+  await ensureSchema();
+  return listPostsAdmin({ q, category, tag, page, limit, sort, status: "published" });
+}
+
+export async function getPostBySlug(slug, { includeDraft = false } = {}) {
+  await ensureSchema();
+  const clauses = ["p.slug=$1"];
+  const values = [slug];
+  if (!includeDraft) clauses.push("p.status='published'", "(p.published_at IS NULL OR p.published_at<=NOW())");
+
+  const { rows } = await pool.query(
+    `SELECT p.*, c.name as category_name, c.slug as category_slug, u.name as author_name
+     FROM posts p
+     LEFT JOIN post_categories c ON c.id = p.category_id
+     LEFT JOIN users u ON u.id = p.author_id
+     WHERE ${clauses.join(" AND ")}
+     LIMIT 1`,
+    values
+  );
+  return rows[0] || null;
+}
+
+export async function createPostCategory(name, slug) {
+  await ensureSchema();
+  const baseSlug = await ensureUniqueSlugByTable("post_categories", slug || name);
+  const id = `pc_${crypto.randomUUID()}`;
+  await pool.query(
+    "INSERT INTO post_categories (id,name,slug,created_at,updated_at) VALUES ($1,$2,$3,NOW(),NOW())",
+    [id, name, baseSlug]
+  );
+  return id;
+}
+
+export async function createPostTag(name, slug) {
+  await ensureSchema();
+  const baseSlug = await ensureUniqueSlugByTable("post_tags", slug || name);
+  const id = `pt_${crypto.randomUUID()}`;
+  await pool.query(
+    "INSERT INTO post_tags (id,name,slug,created_at,updated_at) VALUES ($1,$2,$3,NOW(),NOW())",
+    [id, name, baseSlug]
+  );
+  return id;
+}
+
+export async function listPostCategories() {
+  await ensureSchema();
+  const { rows } = await pool.query("SELECT id,name,slug,created_at,updated_at FROM post_categories ORDER BY name ASC");
+  return rows;
+}
+
+export async function listPostTags() {
+  await ensureSchema();
+  const { rows } = await pool.query("SELECT id,name,slug,created_at,updated_at FROM post_tags ORDER BY name ASC");
+  return rows;
+}
+
+export async function deletePostCategory(id) {
+  await ensureSchema();
+  await pool.query("UPDATE posts SET category_id=NULL WHERE category_id=$1", [id]);
+  await pool.query("DELETE FROM post_categories WHERE id=$1", [id]);
+}
+
+export async function deletePostTag(id) {
+  await ensureSchema();
+  await pool.query("DELETE FROM post_tag_map WHERE tag_id=$1", [id]);
+  await pool.query("DELETE FROM post_tags WHERE id=$1", [id]);
+}
+
+export async function attachTagsToPost(postId, tagIds = []) {
+  await ensureSchema();
+  await pool.query("DELETE FROM post_tag_map WHERE post_id=$1", [postId]);
+  for (const tagId of tagIds) {
+    await pool.query("INSERT INTO post_tag_map (post_id, tag_id) VALUES ($1,$2) ON CONFLICT DO NOTHING", [postId, tagId]);
+  }
+}
+
+export async function createPostRevision(postId, userId) {
+  const { rows } = await pool.query("SELECT title,excerpt,content_json,content_html FROM posts WHERE id=$1 LIMIT 1", [postId]);
+  const p = rows[0];
+  if (!p) return null;
+  const id = `pr_${crypto.randomUUID()}`;
+  await pool.query(
+    `INSERT INTO post_revisions (id,post_id,title,excerpt,content_json,content_html,created_by,created_at)
+     VALUES ($1,$2,$3,$4,$5::jsonb,$6,$7,NOW())`,
+    [id, postId, p.title || null, p.excerpt || null, p.content_json ? JSON.stringify(p.content_json) : null, p.content_html || null, userId || null]
+  );
+  return id;
+}
+
+export async function listPostRevisions(postId, limit = 50) {
+  await ensureSchema();
+  const safeLimit = Math.max(1, Math.min(Number(limit) || 50, 200));
+  const { rows } = await pool.query(
+    `SELECT r.id,r.post_id,r.title,r.excerpt,r.created_at,r.created_by,u.name as created_by_name
+     FROM post_revisions r
+     LEFT JOIN users u ON u.id=r.created_by
+     WHERE r.post_id=$1
+     ORDER BY r.created_at DESC
+     LIMIT $2`,
+    [postId, safeLimit]
+  );
+  return rows;
+}
+
+export async function restorePostRevision(revisionId, actorId = null) {
+  await ensureSchema();
+  const { rows } = await pool.query("SELECT * FROM post_revisions WHERE id=$1 LIMIT 1", [revisionId]);
+  const r = rows[0];
+  if (!r) return false;
+  await pool.query(
+    `UPDATE posts SET title=$2, excerpt=$3, content_json=$4::jsonb, content_html=$5, updated_at=NOW() WHERE id=$1`,
+    [r.post_id, r.title, r.excerpt, r.content_json ? JSON.stringify(r.content_json) : null, r.content_html]
+  );
+  await createPostRevision(r.post_id, actorId);
+  await refreshPostSearchVector(r.post_id);
+  return true;
+}
+
+export async function createPost({ title, slug, excerpt, contentJson, contentHtml, coverImage, status = "draft", categoryId, authorId, seoTitle, seoDescription, seoImage, isFeatured = false, publishedAt = null, tagIds = [] }) {
+  await ensureSchema();
+  const safeSlug = await ensureUniquePostSlug(slug || title);
+  const id = `p_${crypto.randomUUID()}`;
+  await pool.query(
+    `INSERT INTO posts (id, slug, title, excerpt, content_json, content_html, cover_image, status, category_id, author_id, published_at, seo_title, seo_description, seo_image, is_featured, updated_at)
+     VALUES ($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,NOW())`,
+    [id, safeSlug, title, excerpt || null, contentJson ? JSON.stringify(contentJson) : null, contentHtml || null, coverImage || null, status, categoryId || null, authorId || null, publishedAt, seoTitle || null, seoDescription || null, seoImage || null, !!isFeatured]
+  );
+  if (Array.isArray(tagIds) && tagIds.length) await attachTagsToPost(id, tagIds);
+  await createPostRevision(id, authorId || null);
+  await refreshPostSearchVector(id);
+  return id;
+}
+
+export async function updatePost(id, payload, actorId = null) {
+  await ensureSchema();
+  const current = await pool.query("SELECT * FROM posts WHERE id=$1 LIMIT 1", [id]);
+  const post = current.rows[0];
+  if (!post) return false;
+
+  const nextSlug = await ensureUniquePostSlug(payload.slug || post.slug || payload.title || post.title, id);
+  await pool.query(
+    `UPDATE posts
+     SET slug=$2, title=$3, excerpt=$4, content_json=$5::jsonb, content_html=$6, cover_image=$7,
+         status=$8, category_id=$9, seo_title=$10, seo_description=$11, seo_image=$12,
+         is_featured=$13, published_at=$14, updated_at=NOW()
+     WHERE id=$1`,
+    [id, nextSlug, payload.title ?? post.title, payload.excerpt ?? post.excerpt, JSON.stringify(payload.contentJson ?? post.content_json ?? null), payload.contentHtml ?? post.content_html, payload.coverImage ?? post.cover_image, payload.status ?? post.status, payload.categoryId ?? post.category_id, payload.seoTitle ?? post.seo_title, payload.seoDescription ?? post.seo_description, payload.seoImage ?? post.seo_image, payload.isFeatured ?? post.is_featured, payload.publishedAt ?? post.published_at]
+  );
+  if (Array.isArray(payload.tagIds)) await attachTagsToPost(id, payload.tagIds);
+  await createPostRevision(id, actorId);
+  await refreshPostSearchVector(id);
+  return true;
+}
+
+export async function deletePost(id) {
+  await ensureSchema();
+  await pool.query("DELETE FROM posts WHERE id=$1", [id]);
+}
+
+export async function refreshPostSearchVector(id) {
+  await pool.query(
+    `UPDATE posts p
+     SET search_vector =
+       setweight(to_tsvector('simple', coalesce(p.title, '')), 'A') ||
+       setweight(to_tsvector('simple', coalesce(p.excerpt, '')), 'B') ||
+       setweight(to_tsvector('simple', coalesce(p.content_html, '')), 'C')
+     WHERE p.id=$1`,
+    [id]
+  );
+}
+
 export async function exportBackupData() {
   await ensureSchema();
-  const [users, siteContent, contacts, attempts] = await Promise.all([
+  const [users, siteContent, contacts, attempts, posts, categories, tags, tagMap, revisions] = await Promise.all([
     pool.query("SELECT id,name,email,role,status,created_at,updated_at FROM users ORDER BY created_at ASC"),
     pool.query("SELECT key,value,updated_at FROM site_content ORDER BY key ASC"),
     pool.query("SELECT id,first_name,last_name,email,message,status,created_at FROM contact_submissions ORDER BY created_at DESC"),
     pool.query("SELECT id,email,ip,success,created_at FROM auth_attempts ORDER BY created_at DESC LIMIT 5000"),
+    pool.query("SELECT * FROM posts ORDER BY created_at DESC"),
+    pool.query("SELECT * FROM post_categories ORDER BY created_at ASC"),
+    pool.query("SELECT * FROM post_tags ORDER BY created_at ASC"),
+    pool.query("SELECT * FROM post_tag_map"),
+    pool.query("SELECT * FROM post_revisions ORDER BY created_at DESC LIMIT 50000"),
   ]);
 
   let auditLogs = [];
@@ -454,6 +788,11 @@ export async function exportBackupData() {
     siteContent: siteContent.rows,
     contactSubmissions: contacts.rows,
     authAttempts: attempts.rows,
+    posts: posts.rows,
+    postCategories: categories.rows,
+    postTags: tags.rows,
+    postTagMap: tagMap.rows,
+    postRevisions: revisions.rows,
     auditLogs,
   };
 }

@@ -22,12 +22,13 @@ export async function POST(req) {
 
   const passwordHash = await bcrypt.hash(password, 10);
   const userId = `u_${crypto.randomUUID()}`;
+  const safeRole = ["editor", "admin", "super_admin"].includes(role) ? role : "admin";
   await createUser({
     id: userId,
     name,
     email: String(email).toLowerCase(),
     passwordHash,
-    role: role === "super_admin" ? "super_admin" : "admin",
+    role: safeRole,
     status: "active",
   });
 

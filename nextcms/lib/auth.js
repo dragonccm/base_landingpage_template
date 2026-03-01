@@ -54,6 +54,22 @@ export async function requireAdmin() {
   return { user };
 }
 
+export async function requireStaff() {
+  const user = await currentUser();
+  if (!user || !["editor", "admin", "super_admin"].includes(String(user.role))) {
+    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+  }
+  return { user };
+}
+
+export async function requirePostEditor() {
+  const user = await currentUser();
+  if (!user || !["editor", "admin", "super_admin"].includes(String(user.role))) {
+    return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
+  }
+  return { user };
+}
+
 export async function requireSuperAdmin() {
   const user = await currentUser();
   if (!user || String(user.role) !== "super_admin") {

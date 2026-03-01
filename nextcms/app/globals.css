@@ -66,15 +66,19 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 .timelineDot{position:absolute;top:24px;right:-8px;width:14px;height:14px;border-radius:999px;background:var(--primary);border:3px solid #fff;box-shadow:0 0 0 2px #b9d6ff}
 .timelineCard.right .timelineDot{left:-8px;right:auto}
 
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px;background:var(--statsBg,#1e3a8a);border-radius:12px;padding:10px}
-.stats div{padding:8px}
-.stats strong{display:block;color:#fff;font-size:38px}
-.stats span{color:rgba(255,255,255,.85)}
+#research.l-section{padding-top:80px;padding-bottom:80px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:80px;background:transparent;border-radius:0;padding:0}
+.stats>div{padding:18px 16px;border-radius:12px;background:#fff;border:1px solid #e6edf7;transition:all .24s ease;background-repeat:no-repeat;background-position:center;background-size:cover}
+.stats>div:hover{border:1px solid transparent;background-image:linear-gradient(#fff,#fff),linear-gradient(135deg,#61C9FF,#82D4FF),url('/images/stats-network-bg.svg');background-origin:border-box;background-clip:padding-box,border-box,padding-box;box-shadow:4px 4px 14px rgba(25,146,210,.26)}
+.stats strong{display:block;color:#10253f;font-size:38px;line-height:1.1}
+.stats span{color:#4b5563}
 
 .contactGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.contactForm{display:grid;gap:16px}
-.contactForm .l-grid2{gap:16px}
-.contactForm input,.contactForm textarea{margin:0}
+.contactForm{display:grid;gap:12px}
+.contactForm .l-grid2{gap:12px}
+.contactForm input,.contactForm textarea{margin:0;padding:8px 10px;border-radius:8px;font-size:14px}
+.contactForm textarea{min-height:110px}
+.contactForm .l-btn{padding:8px 12px;border-radius:8px;font-size:14px;line-height:1.2}
 .rightInfo{display:grid;gap:10px}
 .rightInfo .l-card strong{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .map{min-height:200px;border:0;border-radius:12px;width:100%}
@@ -128,10 +132,62 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 .colorPickWrap{display:grid;grid-template-columns:30px 54px 1fr;gap:10px;align-items:center}.colorSwatch{display:block;width:30px;height:30px;border-radius:6px;border:1px solid #bbb}
 .imageField{margin-bottom:14px}.dropzone{border:1px dashed #c9c9c9;border-radius:12px;padding:12px;transition:.15s}.dropzone.dragging{border-color:#75323c;background:#fff8f9}
 .dropHint{color:#666;font-size:14px;padding:10px 0}.imagePreview{width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:10px}.urlInput{flex:1;min-width:180px}
+.postEditorCard{display:grid;gap:12px}
+.postEditorMeta{gap:10px}
+.editorHint{margin:0;color:#667085;font-size:13px}
+.coverPicker{border:1px solid #d8e4f2;border-radius:10px;padding:10px;background:#fbfdff}
+.coverPickerHead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px}
+.coverPickerHead small{color:#667085;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.coverPickerGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;max-height:260px;overflow:auto}
+.coverOption{border:1px solid #d7e4f5;border-radius:10px;background:#fff;padding:6px;display:grid;gap:6px;text-align:left;cursor:pointer}
+.coverOption img{width:100%;height:86px;object-fit:cover;border-radius:8px}
+.coverOption span{font-size:12px;line-height:1.3;color:#334155;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.coverOption.active{border-color:#2f9ae0;box-shadow:0 0 0 3px rgba(47,154,224,.15)}
+.richEditorShell{padding:12px;border:1px solid #dce7f4}
+.editorToolbarRow{position:sticky;top:8px;background:#fff;z-index:2;padding-bottom:6px;border-bottom:1px dashed #e5ecf6}
+.editorChartCard{border-style:dashed}
+.richEditor{min-height:320px;border:1px solid #d8e4f2;border-radius:10px;padding:12px;background:#fff;outline:none;line-height:1.7}
+.richEditor:empty:before{content:attr(data-placeholder);color:#8a8a8a}
+.richEditor table{width:100%;border-collapse:collapse;margin:8px 0}
+.richEditor th,.richEditor td{border:1px solid #cdd6e1;padding:6px}
+.richEditor blockquote{border-left:4px solid #dab772;padding-left:10px;color:#4b5563}
+.editorSelect{border:1px solid #cfd9e5;border-radius:8px;padding:8px 10px;background:#fff}
+.editorModal{position:fixed;inset:0;background:rgba(10,15,30,.35);display:grid;place-items:center;z-index:120}
+.editorModalCard{width:min(560px,92vw);background:#fff;border:1px solid #dde5f1;border-radius:12px;padding:14px;box-shadow:0 18px 40px rgba(0,0,0,.18)}
+.editorModalCard h4{margin:0 0 8px}
+.blogHero{padding-top:24px}
+.blogHeroVideo{min-height:360px;padding:28px 0 16px}
+.blogHeroInner{align-items:flex-start}
+.blogHeroInner .l-badge{align-self:flex-start;display:inline-flex;margin-bottom:10px}
+.blogHeroCard{width:min(1040px,94vw);padding:20px 0}
+.blogHeroCard h1{margin:6px 0 0;font-size:36px;line-height:1.4em}
+.blogCrumbs{color:#6b7280;display:block;margin-top:2px}
+.blogTwoCol{display:grid;grid-template-columns:300px 1fr;gap:14px}
+.blogSidebar{position:sticky;top:84px;height:max-content}
+.blogFilterForm{display:grid;gap:10px}
+.blogFilterForm input,.blogFilterForm select{border:1px solid #d4deeb;border-radius:10px;padding:10px 12px;background:#fff;outline:none}
+.blogFilterForm input:focus,.blogFilterForm select:focus{border-color:#2f9ae0;box-shadow:0 0 0 3px rgba(47,154,224,.15)}
+.blogMainGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.blogPostCard{height:440px;display:flex;flex-direction:column;gap:20px;overflow:hidden}
+.blogPostCardImage{width:100%;height:180px;object-fit:cover;border-radius:10px}
+.blogPostCardTitle{margin:0;line-height:1.35}
+.blogPostCardExcerpt{margin:0;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;color:#374151}
+.blogPostCardMeta{margin-top:auto;color:#6b7280}
+.blogDetailCard{display:flex;flex-direction:column;gap:20px}
+.blogDetailCard h1,.blogDetailCard p{margin:0}
+.blogPostTaxonomy{display:flex;gap:10px;flex-wrap:wrap}
+.blogTaxPill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #d7e4f5;border-radius:999px;background:#f8fbff}
+.blogTaxLink{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid #e3ecf8;border-radius:999px;background:#fbfdff}
+.blogCarousel{overflow:hidden;width:100%}
+.blogCarouselTrack{display:flex;will-change:transform}
+.blogCarouselSlide{padding:0 6px}
+.adminShell select,.adminShell input,.adminShell textarea{border:1px solid #d4deeb;border-radius:10px;padding:10px 12px;background:#fff;outline:none;transition:.18s}
+.adminShell select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#6f7f93 50%),linear-gradient(135deg,#6f7f93 50%,transparent 50%),linear-gradient(to right,#fff,#fff);background-position:calc(100% - 18px) calc(50% + 1px),calc(100% - 13px) calc(50% + 1px),100% 0;background-size:5px 5px,5px 5px,2.4em 2.4em;background-repeat:no-repeat;padding-right:40px}
+.adminShell select:focus,.adminShell input:focus,.adminShell textarea:focus{border-color:#2f9ae0;box-shadow:0 0 0 3px rgba(47,154,224,.15)}
 
 @media(max-width:950px){
   .adminShell{grid-template-columns:1fr}.sidebar{position:sticky;top:0;z-index:5}
-  .grid3,.mediaGrid,.l-grid4{grid-template-columns:1fr 1fr}
+  .grid3,.mediaGrid,.l-grid4,.coverPickerGrid{grid-template-columns:1fr 1fr}
   .l-hero h1{font-size:52px}.l-section h2{font-size:42px}
   .split,.contactGrid,.footCols{grid-template-columns:1fr}
   .timelineLine{left:14px}.timelineCard,.timelineCard.right{width:100%;margin-left:0;padding:8px 0 8px 28px}.timelineCard.left{padding-right:0;padding-left:28px}.timelineDot,.timelineCard.right .timelineDot{left:7px;right:auto}
@@ -144,7 +200,9 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
   .heroNet{display:none}
 }
 @media(max-width:680px){
-  .grid2,.grid3,.mediaGrid,.l-grid4,.l-grid2,.stats{grid-template-columns:1fr}
+  .grid2,.grid3,.mediaGrid,.l-grid4,.l-grid2,.stats,.blogMainGrid,.coverPickerGrid{grid-template-columns:1fr}
+  .blogTwoCol{grid-template-columns:1fr}
+  .blogSidebar{position:static}
   .publicHeader{flex-direction:column;align-items:flex-start}
   .l-hero h1{font-size:42px}.l-section h2{font-size:34px}
 }
