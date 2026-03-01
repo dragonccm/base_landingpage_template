@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { requireAdmin } from "@/lib/auth";
+import { auditAdminAction } from "@/lib/audit";
 
 export async function POST(req) {
+  const guard = await requireAdmin();
+  if (guard.error) return guard.error;
+
   try {
     const formData = await req.formData();
     const file = formData.get("file");
@@ -20,6 +25,12 @@ export async function POST(req) {
     const uploadDir = path.join(process.cwd(), "public", "uploads");
     await mkdir(uploadDir, { recursive: true });
     await writeFile(path.join(uploadDir, filename), buffer);
+
+    await auditAdminAction(req, guard.user, "upload.create", "upload", {
+      filename,
+      mimeType: file.type || null,
+      size: typeof file.size === "number" ? file.size : null,
+    });
 
     return NextResponse.json({ ok: true, url: `/uploads/${filename}`, type: isVideo ? "video" : "image" });
   } catch {
