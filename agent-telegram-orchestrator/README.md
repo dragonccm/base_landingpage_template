@@ -44,6 +44,13 @@ Bot dùng long polling (`getUpdates`) và sẽ xử lý các message bắt đầ
 - Có thể map role -> agent id bằng biến môi trường `OPENCLAW_AGENT_*` (xem `.env.example`).
 - Nếu không map, hệ thống dùng `OPENCLAW_AGENT_DEFAULT` (mặc định `main`).
 
+### Safety upgrade
+- `/code:auto` và `/debug` yêu cầu xác nhận 2 bước:
+  1. Gửi command bình thường
+  2. Bot trả `confirm id` và bạn xác nhận bằng `/confirm <id>`
+- Confirm hết hạn sau 10 phút.
+- `/code:auto` sinh thêm `quality-gate.md` để báo pass/fail gate rõ ràng.
+
 ### Project profile mẫu
 Đã có profile sẵn cho chủ đề bạn đề xuất:
 - `project-profiles/expense-note-mobile.json`

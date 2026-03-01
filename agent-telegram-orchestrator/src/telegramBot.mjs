@@ -1,6 +1,8 @@
 import { handleMessage } from "./core.mjs";
 
 const TELEGRAM_API = "https://api.telegram.org";
+const SENSITIVE_COMMANDS = new Set(["code:auto", "debug"]);
+const pendingConfirms = new Map();
 
 function getEnv(name, required = true) {
   const value = process.env[name];
@@ -17,6 +19,19 @@ function parseAllowlist(value = "") {
       .map((s) => s.trim())
       .filter(Boolean)
   );
+}
+
+function commandName(text) {
+  const m = text.match(/^\/([^\s]+)/);
+  return (m?.[1] || "").toLowerCase();
+}
+
+function makeConfirmKey(chatId, userId) {
+  return `${chatId}:${userId}`;
+}
+
+function makeConfirmId() {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
 async function tgRequest(token, method, body = {}) {
@@ -92,6 +107,47 @@ export async function runTelegramPolling() {
           continue;
         }
 
+        if (text.startsWith("/confirm ")) {
+          const confirmId = text.slice(9).trim();
+          const key = makeConfirmKey(chatId, userId);
+          const pending = pendingConfirms.get(key);
+          if (!pending || pending.expiresAt < Date.now()) {
+            pendingConfirms.delete(key);
+            await sendMessage(token, chatId, "❌ No pending confirmation or it has expired.", msg.message_id);
+            continue;
+          }
+
+          if (pending.confirmId !== confirmId) {
+            await sendMessage(token, chatId, "❌ Invalid confirmation id.", msg.message_id);
+            continue;
+          }
+
+          pendingConfirms.delete(key);
+          await sendMessage(token, chatId, `⏳ Running ${pending.commandText}`, msg.message_id);
+          const reply = await handleMessage(pending.commandText, { dryRun: !liveMode });
+          await sendMessage(token, chatId, reply, msg.message_id);
+          continue;
+        }
+
+        const cmd = commandName(text);
+        if (SENSITIVE_COMMANDS.has(cmd)) {
+          const confirmId = makeConfirmId();
+          const key = makeConfirmKey(chatId, userId);
+          pendingConfirms.set(key, {
+            confirmId,
+            commandText: text,
+            expiresAt: Date.now() + 10 * 60 * 1000
+          });
+          await sendMessage(
+            token,
+            chatId,
+            `⚠️ Sensitive command detected: /${cmd}\nReply with /confirm ${confirmId} within 10 minutes to proceed.`,
+            msg.message_id
+          );
+          continue;
+        }
+
+        await sendMessage(token, chatId, `⏳ Running /${cmd}...`, msg.message_id);
         const reply = await handleMessage(text, { dryRun: !liveMode });
         await sendMessage(token, chatId, reply, msg.message_id);
       }

@@ -1,4 +1,28 @@
+import { readdir } from "node:fs/promises";
+import path from "node:path";
 import { buildRoleTask } from "./prompts.mjs";
+
+function hasLiveErrors(roleRuns) {
+  return roleRuns.some((r) => (r.result || "").includes("[LIVE_ERROR]"));
+}
+
+async function collectArtifactStats() {
+  const root = path.resolve(process.cwd(), "artifacts");
+  const commands = ["brainstorm", "plan", "code-auto", "code-review", "debug", "watzup"];
+  const stats = {};
+
+  for (const cmd of commands) {
+    try {
+      const dir = path.join(root, cmd);
+      const runs = await readdir(dir, { withFileTypes: true });
+      stats[cmd] = runs.filter((d) => d.isDirectory()).length;
+    } catch {
+      stats[cmd] = 0;
+    }
+  }
+
+  return stats;
+}
 
 export async function runWorkflow({ workflow, input, openclaw, projectContext }) {
   const cmd = workflow.command;
@@ -7,6 +31,25 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
     return {
       summary: "Context reset requested. No agent spawned.",
       files: [{ name: "clear-state.md", content: "# Clear\nSession context has been reset.\n" }]
+    };
+  }
+
+  if (cmd === "watzup") {
+    const tracker = await openclaw.spawn({
+      role: "tracker",
+      runtime: "subagent",
+      task: buildRoleTask({ role: "tracker", command: cmd, input, projectContext })
+    });
+    const stats = await collectArtifactStats();
+    const summary = "/watzup completed via subagent (1 role).";
+    return {
+      summary,
+      files: [
+        {
+          name: "project-health.md",
+          content: `# Project Health\n\n## Workflow Runs\n- brainstorm: ${stats["brainstorm"]}\n- plan: ${stats["plan"]}\n- code:auto: ${stats["code-auto"]}\n- code:review: ${stats["code-review"]}\n- debug: ${stats["debug"]}\n\n## Tracker Summary\n${tracker.result}\n`
+        }
+      ]
     };
   }
 
@@ -61,6 +104,7 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
     );
   }
 
+  const failed = hasLiveErrors(roleRuns);
   const files = (workflow.artifacts || []).map((name) => ({
     name,
     content: `# ${name}\n\nCommand: /${cmd}\nRuntime: ${workflow.runtime}\n\n## Agent Runs\n${roleRuns
@@ -68,6 +112,20 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
       .join("\n")}\n`
   }));
 
-  const summary = `/${cmd} completed via ${workflow.runtime} (${roleRuns.length} role(s)).`;
+  if (cmd === "code:auto") {
+    files.push({
+      name: "quality-gate.md",
+      content: `# Quality Gate\n\n- Build/Test/Review pipeline: ${failed ? "FAILED" : "PASSED"}\n- Live errors detected: ${failed ? "YES" : "NO"}\n\n${
+        failed
+          ? "Action: check [LIVE_ERROR] sections in reports, fix and rerun the same phase."
+          : "Action: proceed to next phase."
+      }\n`
+    });
+  }
+
+  const summary = failed
+    ? `/${cmd} completed with issues (${roleRuns.length} role(s)); check artifacts for [LIVE_ERROR].`
+    : `/${cmd} completed via ${workflow.runtime} (${roleRuns.length} role(s)).`;
+
   return { summary, files };
 }
