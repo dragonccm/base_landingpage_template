@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.mjs",
-    "demo": "node src/index.mjs --demo"
+    "demo": "node src/index.mjs --demo",
+    "telegram": "node src/index.mjs --telegram"
   }
 }

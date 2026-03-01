@@ -28,6 +28,17 @@ npm run demo
 npm start -- "/plan project=expense-note-mobile scope=mvp"
 ```
 
+## Chạy qua Telegram
+1. Tạo bot với BotFather và lấy token.
+2. Tạo `.env` từ `.env.example`.
+3. Thiết lập allowlist user/chat để an toàn.
+4. Chạy:
+```bash
+npm run telegram
+```
+
+Bot dùng long polling (`getUpdates`) và sẽ xử lý các message bắt đầu bằng `/`.
+
 ### Project profile mẫu
 Đã có profile sẵn cho chủ đề bạn đề xuất:
 - `project-profiles/expense-note-mobile.json`
