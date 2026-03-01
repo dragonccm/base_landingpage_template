@@ -8,6 +8,6 @@ export async function GET() {
 export async function PUT(req) {
   const body = await req.json();
   if (!body?.identity || !body?.seo || !body?.smtp) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
-  await saveSettings(body);
+  await saveSettings({ ...body, security: body.security || {} });
   return NextResponse.json({ ok: true });
 }

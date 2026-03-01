@@ -6,50 +6,19 @@ import ImageField from "@/components/ImageField";
 import { toast } from "@/lib/toast";
 import { Trash2 } from "lucide-react";
 
-const tabs = ["dashboard", "landing", "seo", "identity", "smtp", "media"];
-
-const contentGroups = [
-  { id: "hero", label: "Hero Section", titleKey: "title", children: ["heroBadge", "subtitle", "cta", "cta2", "chip1", "chip2", "chip3", "chip4"] },
-  { id: "nav", label: "Navigation", titleKey: "nav1", children: ["nav2", "nav3", "nav4", "nav5", "nav6", "navCta"] },
-  { id: "goals", label: "Goals & Mission", titleKey: "goalsTitle", children: ["goalsSubtitle", "goal1Title", "goal1Desc", "goal2Title", "goal2Desc", "goal3Title", "goal3Desc", "goal4Title", "goal4Desc"] },
-  { id: "functions", label: "Functions", titleKey: "functionsTitle", children: ["function1", "function2", "function3", "function4", "function5", "function6"] },
-  { id: "focus", label: "Focus Areas", titleKey: "focusTitle", children: ["focus1Label", "focus1Title", "focus1Desc", "focus2Label", "focus2Title", "focus2Desc", "focus3Label", "focus3Title", "focus3Desc", "focus4Label", "focus4Title", "focus4Desc"] },
-  { id: "research", label: "Research", titleKey: "researchTitle", children: ["timeline1Title", "timeline1Desc", "timeline2Title", "timeline2Desc", "timeline3Title", "timeline3Desc", "timeline4Title", "timeline4Desc", "timeline5Title", "timeline5Desc", "stat1Value", "stat1Label", "stat2Value", "stat2Label", "stat3Value", "stat3Label", "stat4Value", "stat4Label"] },
-  { id: "contact", label: "Contact", titleKey: "contactTitle", children: ["formTitle", "firstNamePlaceholder", "lastNamePlaceholder", "emailPlaceholder", "messagePlaceholder", "submitText", "addressTitle", "addressText", "phoneTitle", "phoneText", "supportEmailTitle", "supportEmailText", "workTimeTitle", "workTimeText"] },
-  { id: "footer", label: "Footer", titleKey: "footerText", children: ["footerCol2Title", "footerCol2Text", "footerCol3Title", "footerCol3Text", "footerCol4Title", "footerCol4Text"] },
-];
+const tabs = ["dashboard", "landing", "seo", "identity", "smtp", "security", "media", "contacts", "users", "backup"];
 
 export default function Admin() {
   const dispatch = useDispatch();
-  const { landing, settings, media, active, loading } = useSelector((s) => s.admin);
+  const { landing, settings, media, contacts, users, active, loading } = useSelector((s) => s.admin);
   const [upload, setUpload] = useState({ url: "", name: "", alt: "" });
   const [saving, setSaving] = useState(false);
-  const [addingMedia, setAddingMedia] = useState(false);
-  const [expanded, setExpanded] = useState({ hero: true });
-  const [contentLang, setContentLang] = useState("en");
-  const [mediaPage, setMediaPage] = useState(1);
-  const [mediaEdits, setMediaEdits] = useState({});
+  const [userForm, setUserForm] = useState({ name: "", email: "", password: "", role: "admin" });
 
   useEffect(() => { dispatch(fetchAdminData()); }, [dispatch]);
 
   const setLandingField = (group, key, value) => dispatch(setLandingState({ ...landing, [group]: { ...landing[group], [key]: value } }));
   const setSettingsField = (group, key, value) => dispatch(setSettingsState({ ...settings, [group]: { ...settings[group], [key]: value } }));
-  const toggleGroup = (id) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
-
-  const currentContent = landing?.contentI18n?.[contentLang] || landing?.content || {};
-  const setContentField = (key, value) => {
-    const next = {
-      ...landing,
-      contentI18n: {
-        ...(landing.contentI18n || {}),
-        [contentLang]: {
-          ...(landing.contentI18n?.[contentLang] || landing.content || {}),
-          [key]: value,
-        },
-      },
-    };
-    dispatch(setLandingState(next));
-  };
 
   async function saveLanding() {
     setSaving(true);
@@ -68,9 +37,7 @@ export default function Admin() {
   async function addMedia(e) {
     e.preventDefault();
     if (!upload.url) return toast.error("Vui lòng chọn/upload ảnh trước");
-    setAddingMedia(true);
     const res = await fetch("/api/admin/media", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(upload) });
-    setAddingMedia(false);
     if (!res.ok) return toast.error("Thêm media lỗi");
     setUpload({ url: "", name: "", alt: "" });
     toast.success("Thêm media thành công");
@@ -83,29 +50,56 @@ export default function Admin() {
     dispatch(fetchAdminData());
   }
 
-  async function updateMediaItem(item) {
-    const patch = mediaEdits[item.id] || {};
-    const payload = { ...item, ...patch };
-    const res = await fetch("/api/admin/media", {
+  async function setContactStatus(id, status) {
+    const res = await fetch("/api/admin/contacts", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ id, status }),
     });
-    if (!res.ok) return toast.error("Không cập nhật được media");
-    setMediaEdits((p) => ({ ...p, [item.id]: undefined }));
-    toast.success("Đã cập nhật media");
+    if (!res.ok) return toast.error("Cập nhật trạng thái thất bại");
     dispatch(fetchAdminData());
   }
 
-  const stats = useMemo(() => ({ media: media?.length || 0, contentFields: landing ? Object.keys(landing.content || {}).length : 0, seoFields: settings ? Object.keys(settings.seo || {}).length : 0 }), [media, landing, settings]);
+  async function createAdminUser(e) {
+    e.preventDefault();
+    const res = await fetch("/api/admin/users", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(userForm),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return toast.error(data.error || "Không tạo được tài khoản");
+    toast.success("Đã tạo tài khoản");
+    setUserForm({ name: "", email: "", password: "", role: "admin" });
+    dispatch(fetchAdminData());
+  }
 
-  const pageSize = 9;
-  const totalPages = Math.max(1, Math.ceil((media?.length || 0) / pageSize));
-  const paginatedMedia = (media || []).slice((mediaPage - 1) * pageSize, mediaPage * pageSize);
+  async function userAction(id, action) {
+    const res = await fetch("/api/admin/users", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id, action }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return toast.error(data.error || "Thao tác thất bại");
+    toast.success("Đã cập nhật tài khoản");
+    dispatch(fetchAdminData());
+  }
 
-  if (loading || !landing || !settings) return <main className="adminShell"><aside className="sidebar" /><section className="mainPanel"><div className="skeleton lg" /><div className="skeleton" /><div className="skeleton" /></section></main>;
+  async function createBackup() {
+    const res = await fetch("/api/admin/backup", { method: "POST" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return toast.error(data.error || "Backup thất bại");
+    toast.success(`Backup xong: ${data.backupPath}`);
+  }
 
-  const t = landing.theme;
+  const stats = useMemo(() => ({
+    media: media?.length || 0,
+    contacts: contacts?.length || 0,
+    users: users?.length || 0,
+  }), [media, contacts, users]);
+
+  if (loading || !landing || !settings) return <main className="adminShell"><aside className="sidebar" /><section className="mainPanel"><div className="skeleton lg" /><div className="skeleton" /></section></main>;
 
   return (
     <main className="adminShell">
@@ -115,91 +109,27 @@ export default function Admin() {
       </aside>
 
       <section className="mainPanel">
-        <header className="panelHeader">
-          <div><h1>Admin Dashboard</h1><p>White UI + Black sidebar + accents #75323c / #dab772</p></div>
-          <div className="row"><a href="/" target="_blank">Open Site</a><button className={`btn ${saving ? "loading" : ""}`} disabled={saving}>{saving ? "Saving..." : "Ready"}</button></div>
-        </header>
+        <header className="panelHeader"><div><h1>Admin Dashboard</h1></div><div className="row"><a href="/" target="_blank">Open Site</a></div></header>
 
-        {active === "dashboard" && <div className="grid3"><article className="card kpi"><h3>Media</h3><strong>{stats.media}</strong></article><article className="card kpi"><h3>Content Fields</h3><strong>{stats.contentFields}</strong></article><article className="card kpi"><h3>SEO Fields</h3><strong>{stats.seoFields}</strong></article></div>}
+        {active === "dashboard" && <div className="grid3"><article className="card kpi"><h3>Media</h3><strong>{stats.media}</strong></article><article className="card kpi"><h3>Contacts</h3><strong>{stats.contacts}</strong></article><article className="card kpi"><h3>Users</h3><strong>{stats.users}</strong></article></div>}
 
-        {active === "landing" && <>
-          <div className="card">
-            <h3>Theme</h3>
-            <div className="grid2">
-              {Object.entries(landing.theme).map(([k, v]) => {
-                const isColorLike = typeof v === "string" && (/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v) || v.startsWith("rgb") || k.toLowerCase().includes("color") || k.toLowerCase().includes("bg") || k.toLowerCase().includes("grad") || k.toLowerCase().includes("border"));
-                return (
-                  <label key={k} className="fieldWrap">
-                    <span className="fieldLabel">{k}</span>
-                    {isColorLike ? (
-                      <div className="colorPickWrap"><span className="colorSwatch" style={{ background: v }} /><input type="color" value={v.startsWith("#") ? v : "#2f9ae0"} onChange={(e) => setLandingField("theme", k, e.target.value)} /><input value={v} onChange={(e) => setLandingField("theme", k, e.target.value)} /></div>
-                    ) : <input value={v} onChange={(e) => setLandingField("theme", k, e.target.value)} />}
-                  </label>
-                );
-              })}
-            </div>
-          </div>
+        {active === "landing" && <div className="card"><h3>Theme + Content</h3><div className="grid2">{Object.entries(landing.theme).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><input value={v} onChange={(e) => setLandingField("theme", k, e.target.value)} /></label>)}</div><h4>Content</h4><div className="grid2">{Object.entries(landing.content || {}).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><textarea rows={3} value={v} onChange={(e) => setLandingField("content", k, e.target.value)} /></label>)}</div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveLanding} disabled={saving}>Save Landing</button></div>}
 
-          <div className="card">
-            <h3>Media Bindings (Landing)</h3>
-            <div className="grid2">
-              <ImageField label="heroVideoUrl" mediaType="video" value={landing.content.heroVideoUrl || ""} onChange={(v) => setLandingField("content", "heroVideoUrl", v)} />
-              <ImageField label="footerBgImageUrl" mediaType="image" value={landing.content.footerBgImageUrl || ""} onChange={(v) => setLandingField("content", "footerBgImageUrl", v)} />
-            </div>
-          </div>
+        {active === "seo" && <div className="card"><h3>SEO Metadata</h3><div className="grid2">{Object.entries(settings.seo).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><textarea rows={2} value={v} onChange={(e) => setSettingsField("seo", k, e.target.value)} /></label>)}</div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save SEO</button></div>}
 
-          <div className="card">
-            <div className="row langSwitchRow">
-              <h3>Content Editor (Level-based)</h3>
-              <div className="langSwitch">
-                <button type="button" className={`langBtn ${contentLang === "en" ? "active" : ""}`} onClick={() => setContentLang("en")}>English</button>
-                <button type="button" className={`langBtn ${contentLang === "vi" ? "active" : ""}`} onClick={() => setContentLang("vi")}>Tiếng Việt</button>
-              </div>
-            </div>
-            {contentGroups.map((g) => (
-              <div key={g.id} className="groupCard">
-                <div className="groupHead">
-                  <strong>{g.label}</strong>
-                  <button type="button" className="btn ghostBtn" onClick={() => toggleGroup(g.id)}>{expanded[g.id] ? "Ẩn nội dung con" : "Show thêm"}</button>
-                </div>
-                <label className="fieldWrap">
-                  <span className="fieldLabel">{g.titleKey} (cấp cao)</span>
-                  <textarea rows={2} value={currentContent[g.titleKey] || ""} onChange={(e) => setContentField(g.titleKey, e.target.value)} />
-                </label>
-                {expanded[g.id] && (
-                  <div className="grid2">
-                    {g.children.map((k) => (
-                      <label key={k} className="fieldWrap">
-                        <span className="fieldLabel">{k}</span>
-                        <textarea rows={3} value={currentContent[k] || ""} onChange={(e) => setContentField(k, e.target.value)} />
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-            <button className={`btn ${saving ? "loading" : ""}`} onClick={saveLanding} disabled={saving}>Save Landing</button>
-          </div>
+        {active === "identity" && <div className="card"><h3>Identity</h3><div className="grid2">{Object.entries(settings.identity).map(([k, v]) => k.toLowerCase().includes("logo") || k.toLowerCase().includes("favicon") ? <ImageField key={k} label={k} value={v || ""} onChange={(nv) => setSettingsField("identity", k, nv)} /> : <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><input value={v} onChange={(e) => setSettingsField("identity", k, e.target.value)} /></label>)}</div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save Identity</button></div>}
 
-          <div className="card" style={{ borderColor: t.primaryColor }}><h3>Live Preview ({contentLang.toUpperCase()})</h3><div className="previewBox" style={{ fontFamily: t.fontFamily, color: t.textColor, background: t.bgColor }}><h2>{currentContent.title || ""}</h2><p>{currentContent.subtitle || ""}</p><button className="btn" style={{ background: t.primaryColor }}>{currentContent.cta || "CTA"}</button></div></div>
-        </>}
+        {active === "smtp" && <div className="card"><h3>SMTP</h3><div className="grid2">{Object.entries(settings.smtp || {}).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><input type={k.toLowerCase().includes("pass") ? "password" : "text"} value={v || ""} onChange={(e) => setSettingsField("smtp", k, e.target.value)} /></label>)}</div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save SMTP</button></div>}
 
-        {active === "seo" && <div className="card"><h3>SEO Metadata</h3><div className="grid2">{Object.entries(settings.seo).filter(([k]) => !k.toLowerCase().includes("image")).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><textarea rows={3} value={v} onChange={(e) => setSettingsField("seo", k, e.target.value)} /></label>)}</div><div className="grid2"><ImageField label="ogImage" mediaType="image" value={settings.seo.ogImage || ""} onChange={(v) => setSettingsField("seo", "ogImage", v)} /><ImageField label="socialPreviewImage" mediaType="image" value={settings.seo.socialPreviewImage || ""} onChange={(v) => setSettingsField("seo", "socialPreviewImage", v)} /></div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save SEO</button></div>}
+        {active === "security" && <div className="card"><h3>Security</h3><div className="grid2">{Object.entries(settings.security || {}).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><input value={v || ""} onChange={(e) => setSettingsField("security", k, e.target.value)} /></label>)}</div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save Security</button></div>}
 
-        {active === "identity" && <div className="card"><h3>Identity</h3><div className="grid2">{Object.entries(settings.identity).filter(([k]) => !k.toLowerCase().includes("logo") && !k.toLowerCase().includes("favicon")).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><input value={v} onChange={(e) => setSettingsField("identity", k, e.target.value)} /></label>)}</div><div className="grid2"><ImageField label="logoUrl" value={settings.identity.logoUrl} onChange={(v) => setSettingsField("identity", "logoUrl", v)} /><ImageField label="faviconUrl" value={settings.identity.faviconUrl} onChange={(v) => setSettingsField("identity", "faviconUrl", v)} /></div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save Identity</button></div>}
+        {active === "media" && <><form className="card" onSubmit={addMedia}><h3>Media Manager</h3><ImageField label="Media File" value={upload.url} mediaType="any" onChange={(v, type) => setUpload({ ...upload, url: v, type: type || upload.type })} /><div className="grid2"><label className="fieldWrap"><span className="fieldLabel">name</span><input value={upload.name} onChange={(e) => setUpload({ ...upload, name: e.target.value })} /></label><label className="fieldWrap"><span className="fieldLabel">alt</span><input value={upload.alt} onChange={(e) => setUpload({ ...upload, alt: e.target.value })} /></label></div><button className="btn">Add Media</button></form><div className="mediaGrid">{(media || []).map((m) => <article key={m.id} className="card mediaCard">{(m.type === "video" || /\.(mp4|webm|mov)$/i.test(m.url)) ? <video src={m.url} controls className="mediaThumb" /> : <img src={m.url} alt={m.alt || m.name} className="mediaThumb" />}<div className="row"><button className="deleteBtn" onClick={() => removeMedia(m.id)}><Trash2 size={16} /> Xoá</button></div></article>)}</div></>}
 
-        {active === "smtp" && <div className="card"><h3>SMTP Configuration (Contact Form)</h3><div className="grid2">{Object.entries(settings.smtp || {}).map(([k, v]) => <label key={k} className="fieldWrap"><span className="fieldLabel">{k}</span><input type={k.toLowerCase().includes("pass") ? "password" : "text"} value={v || ""} onChange={(e) => setSettingsField("smtp", k, e.target.value)} /></label>)}</div><button className={`btn ${saving ? "loading" : ""}`} onClick={saveSettings} disabled={saving}>Save SMTP</button></div>}
+        {active === "contacts" && <div className="card"><h3>Contact submissions</h3><div style={{ display: "grid", gap: 12 }}>{(contacts || []).map((c) => <article key={c.id} className="card"><strong>{c.first_name} {c.last_name} - {c.email}</strong><p>{c.message}</p><small>{new Date(c.created_at).toLocaleString()}</small><div className="row"><button className="btn ghostBtn" onClick={() => setContactStatus(c.id, "reviewed")}>Mark Reviewed</button><button className="btn" onClick={() => setContactStatus(c.id, "resolved")}>Mark Resolved</button></div></article>)}</div></div>}
 
-        {active === "media" && <>
-          <form className="card" onSubmit={addMedia}>
-            <h3>Media Manager</h3>
-            <ImageField label="Media File" value={upload.url} mediaType="any" onChange={(v, type) => setUpload({ ...upload, url: v, type: type || upload.type })} />
-            <div className="grid2"><label className="fieldWrap"><span className="fieldLabel">name</span><input value={upload.name} onChange={(e) => setUpload({ ...upload, name: e.target.value })} /></label><label className="fieldWrap"><span className="fieldLabel">alt</span><input value={upload.alt} onChange={(e) => setUpload({ ...upload, alt: e.target.value })} /></label></div>
-            <button className={`btn ${addingMedia ? "loading" : ""}`} disabled={addingMedia}>{addingMedia ? "Adding..." : "Add Media"}</button>
-          </form>
-          <div className="mediaGrid">{paginatedMedia.map((m) => { const edit = mediaEdits[m.id] || {}; const nameVal = edit.name ?? m.name ?? ""; const altVal = edit.alt ?? m.alt ?? ""; return <article key={m.id} className="card mediaCard">{(m.type === "video" || /\.(mp4|webm|mov)$/i.test(m.url)) ? <video src={m.url} controls className="mediaThumb" loading="lazy" /> : <img src={m.url} alt={altVal || nameVal} className="mediaThumb" loading="lazy" />}<div className="mediaMeta"><input value={nameVal} onChange={(e)=>setMediaEdits((p)=>({...p,[m.id]:{...(p[m.id]||{}),name:e.target.value}}))} /><input value={altVal} onChange={(e)=>setMediaEdits((p)=>({...p,[m.id]:{...(p[m.id]||{}),alt:e.target.value}}))} placeholder="Alt text" /><span className="mediaType">{m.type || "image"}</span></div><div className="row"><button className="btn" onClick={() => updateMediaItem(m)}>Lưu</button><button className="deleteBtn" onClick={() => removeMedia(m.id)}><Trash2 size={16} /> Xoá</button></div></article>; })}</div>
-          <div className="row pageRow"><button className="btn ghostBtn" onClick={() => setMediaPage((p) => Math.max(1, p - 1))} disabled={mediaPage === 1}>Prev</button><span>Page {mediaPage}/{totalPages}</span><button className="btn ghostBtn" onClick={() => setMediaPage((p) => Math.min(totalPages, p + 1))} disabled={mediaPage === totalPages}>Next</button></div>
-        </>}
+        {active === "users" && <><form className="card" onSubmit={createAdminUser}><h3>User Management (super admin)</h3><div className="grid2"><input placeholder="name" value={userForm.name} onChange={(e) => setUserForm({ ...userForm, name: e.target.value })} /><input placeholder="email" value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} /><input placeholder="password" type="password" value={userForm.password} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} /><select value={userForm.role} onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}><option value="admin">admin</option><option value="super_admin">super_admin</option></select></div><button className="btn">Create user</button></form><div className="card"><h3>Users</h3>{(users || []).map((u) => <div key={u.id} className="row" style={{ justifyContent: "space-between", borderBottom: "1px solid #ddd", padding: "8px 0" }}><span>{u.name} ({u.email}) - {u.role} - {u.status}</span><div className="row"><button className="btn ghostBtn" onClick={() => userAction(u.id, "activate")}>Activate</button><button className="btn ghostBtn" onClick={() => userAction(u.id, "block")}>Block</button><button className="deleteBtn" onClick={() => userAction(u.id, "delete")}>Delete</button></div></div>)}</div></>}
+
+        {active === "backup" && <div className="card"><h3>Backup toàn diện</h3><p>Tạo snapshot dữ liệu DB + bản sao thư mục uploads vào /backups/timestamp</p><button className="btn" onClick={createBackup}>Create Backup</button></div>}
       </section>
     </main>
   );
