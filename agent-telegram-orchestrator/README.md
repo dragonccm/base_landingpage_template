@@ -25,7 +25,16 @@ Hệ thống điều phối nhiều agent thông qua lệnh chat Telegram.
 ```bash
 npm run demo
 # hoặc
-npm start -- "/plan scope=mvp"
+npm start -- "/plan project=expense-note-mobile scope=mvp"
+```
+
+### Project profile mẫu
+Đã có profile sẵn cho chủ đề bạn đề xuất:
+- `project-profiles/expense-note-mobile.json`
+
+Bạn có thể truyền profile vào command:
+```bash
+npm start -- "/brainstorm project=expense-note-mobile Xây app mobile quản lý chi tiêu"
 ```
 
 > Hiện tại chạy ở chế độ `dry-run` để kiểm tra parser/router/workflow và artifact output.

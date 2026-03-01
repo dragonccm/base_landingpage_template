@@ -1,0 +1,31 @@
+{
+  "id": "expense-note-mobile",
+  "name": "Mobile Expense & Notes App",
+  "productGoal": "Giúp người dùng ghi chi tiêu nhanh, phân loại thông minh và lưu ghi chú tài chính cá nhân theo ngày/tháng.",
+  "targetUsers": [
+    "Sinh viên",
+    "Nhân viên văn phòng",
+    "Freelancer"
+  ],
+  "coreFeatures": [
+    "Quick add transaction",
+    "Category & tags",
+    "Monthly budget tracking",
+    "Expense analytics dashboard",
+    "Notes linked to transactions",
+    "Offline-first sync"
+  ],
+  "nonFunctional": [
+    "Mobile-first UX",
+    "Data privacy by default",
+    "Fast startup (<2s)",
+    "Crash-free >99.5%"
+  ],
+  "suggestedStack": {
+    "mobile": "React Native (Expo)",
+    "backend": "Node.js + Fastify",
+    "database": "PostgreSQL",
+    "auth": "JWT + refresh token",
+    "analytics": "Metabase / Superset"
+  }
+}

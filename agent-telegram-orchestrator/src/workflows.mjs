@@ -1,4 +1,6 @@
-export async function runWorkflow({ workflow, input, openclaw }) {
+import { buildRoleTask } from "./prompts.mjs";
+
+export async function runWorkflow({ workflow, input, openclaw, projectContext }) {
   const cmd = workflow.command;
 
   if (cmd === "clear") {
@@ -15,7 +17,12 @@ export async function runWorkflow({ workflow, input, openclaw }) {
         openclaw.spawn({
           role: r,
           runtime: "subagent",
-          task: `Research input: ${input.freeText || "project scope"}`
+          task: buildRoleTask({
+            role: "researcher",
+            command: cmd,
+            input,
+            projectContext
+          })
         })
       )
     );
@@ -23,7 +30,9 @@ export async function runWorkflow({ workflow, input, openclaw }) {
     const planner = await openclaw.spawn({
       role: "planner",
       runtime: "subagent",
-      task: `Synthesize researcher findings: ${parallel.map((p) => p.result).join(" | ")}`
+      task: `${buildRoleTask({ role: "planner", command: cmd, input, projectContext })}\n\nResearch inputs: ${parallel
+        .map((p) => p.result)
+        .join(" | ")}`
     });
 
     return {
@@ -47,7 +56,7 @@ export async function runWorkflow({ workflow, input, openclaw }) {
       await openclaw.spawn({
         role,
         runtime: workflow.runtime,
-        task: `${cmd} execution with args=${JSON.stringify(input.args)} freeText=${input.freeText}`
+        task: buildRoleTask({ role, command: cmd, input, projectContext })
       })
     );
   }
