@@ -50,6 +50,7 @@ Bot dùng long polling (`getUpdates`) và sẽ xử lý các message bắt đầ
   2. Bot trả `confirm id` và bạn xác nhận bằng `/confirm <id>`
 - Confirm hết hạn sau 10 phút.
 - `/code:auto` sinh thêm `quality-gate.md` để báo pass/fail gate rõ ràng.
+- Gate `/code:auto` kiểm tra bằng chứng bắt buộc: `Changed Files`, `Commit Hash`, `Test Result`, `Security`, `Docs Updated`.
 
 ### Project profile mẫu
 Đã có profile sẵn cho chủ đề bạn đề xuất:

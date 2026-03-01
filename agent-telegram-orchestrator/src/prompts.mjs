@@ -10,8 +10,14 @@ export function buildRoleTask({ role, command, input, projectContext }) {
     tester: "Write and run tests, provide failures with reproducible steps.",
     reviewer: "Review for correctness, maintainability, and security risks.",
     debugger: "Perform root-cause analysis from logs and suggest minimal-risk fix + regression tests.",
-    tracker: "Summarize project health, bottlenecks, and next best actions."
+    tracker: "Summarize project health, bottlenecks, and next best actions.",
+    docs: "Update technical docs/specs to reflect implementation and behavior changes."
   };
 
-  return `${base}\n\nRole: ${role}\nInstruction: ${roleHints[role] || "Complete assigned task with high signal output."}`;
+  const strictTemplate =
+    command === "code:auto"
+      ? "\n\nSTRICT OUTPUT FORMAT (required):\n- Changed Files: <list>\n- Commit Hash: <hash-or-none>\n- Test Result: <pass/fail + evidence>\n- Security: <findings/no critical>\n- Docs Updated: <what changed>\n- Next Action: <next step>"
+      : "";
+
+  return `${base}\n\nRole: ${role}\nInstruction: ${roleHints[role] || "Complete assigned task with high signal output."}${strictTemplate}`;
 }

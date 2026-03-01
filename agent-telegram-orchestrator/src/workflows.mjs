@@ -1,6 +1,7 @@
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { buildRoleTask } from "./prompts.mjs";
+import { validateCodeAutoRoleRuns } from "./validators.mjs";
 
 function hasLiveErrors(roleRuns) {
   return roleRuns.some((r) => (r.result || "").includes("[LIVE_ERROR]"));
@@ -112,19 +113,23 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
       .join("\n")}\n`
   }));
 
+  let gateFailed = failed;
   if (cmd === "code:auto") {
+    const gate = validateCodeAutoRoleRuns(roleRuns);
+    gateFailed = gateFailed || !gate.passed;
+
     files.push({
       name: "quality-gate.md",
-      content: `# Quality Gate\n\n- Build/Test/Review pipeline: ${failed ? "FAILED" : "PASSED"}\n- Live errors detected: ${failed ? "YES" : "NO"}\n\n${
-        failed
-          ? "Action: check [LIVE_ERROR] sections in reports, fix and rerun the same phase."
+      content: `# Quality Gate\n\n- Build/Test/Review pipeline: ${gateFailed ? "FAILED" : "PASSED"}\n- Live errors detected: ${failed ? "YES" : "NO"}\n- Evidence format checks passed: ${gate.passed ? "YES" : "NO"}\n\n## Failed Checks\n${gate.failedChecks.length ? gate.failedChecks.map((c) => `- ${c}`).join("\n") : "- none"}\n\n${
+        gateFailed
+          ? "Action: fix missing evidence / live errors and rerun same phase."
           : "Action: proceed to next phase."
       }\n`
     });
   }
 
-  const summary = failed
-    ? `/${cmd} completed with issues (${roleRuns.length} role(s)); check artifacts for [LIVE_ERROR].`
+  const summary = gateFailed
+    ? `/${cmd} completed with issues (${roleRuns.length} role(s)); quality gate failed, check artifacts.`
     : `/${cmd} completed via ${workflow.runtime} (${roleRuns.length} role(s)).`;
 
   return { summary, files };
