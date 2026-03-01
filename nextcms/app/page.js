@@ -2,8 +2,14 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLanding, fetchSettings } from "@/store/siteSlice";
-import { Flag, UserRound, Handshake, Globe, CreditCard, ChartNoAxesCombined, Cpu, Link2, IdCard, Building2, TrendingUp, Wallet, FlaskConical, MapPin, Phone, Mail, Clock3, Star, ArrowUp, Facebook, Linkedin, Twitter, Youtube } from "lucide-react";
+import { Flag, UserRound, Handshake, Globe, CreditCard, ChartNoAxesCombined, Cpu, Link2, IdCard, Building2, TrendingUp, Wallet, FlaskConical, ArrowUp } from "lucide-react";
 import { toast } from "@/lib/toast";
+import Header from "@/components/sections/Header";
+import HeroSection from "@/components/sections/HeroSection";
+import GoalsSection from "@/components/sections/GoalsSection";
+import FocusSection from "@/components/sections/FocusSection";
+import ContactSection from "@/components/sections/ContactSection";
+import FooterSection from "@/components/sections/FooterSection";
 
 const goalIcons = [Flag, UserRound, Handshake, Globe];
 const focusIcons = [CreditCard, ChartNoAxesCombined, Cpu, Link2];
@@ -41,9 +47,9 @@ export default function Home() {
     const res = await fetch("/api/contact", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(form) });
     const data = await res.json().catch(() => ({}));
     setSending(false);
-    if (!res.ok) return toast.error(data.error || "Gửi mail thất bại");
+    if (!res.ok) return toast.error(data.error || "Gửi liên hệ thất bại");
     setForm({ firstName: "", lastName: "", email: "", message: "" });
-    toast.success("Đã gửi liên hệ thành công");
+    toast.success("Đã ghi nhận liên hệ thành công");
   }
 
   if (loading || !landing || !settings) return <main className="landing"><div className="container"><div className="skeleton lg" /><div className="skeleton" /><div className="skeleton" /></div></main>;
@@ -72,101 +78,18 @@ export default function Home() {
 
   return (
     <main className="landing" style={{ "--primary": t.primaryColor, "--secondary": t.secondaryColor, "--txt": t.textColor, "--muted": t.mutedColor, "--bg": t.bgColor, "--badgeFrom": t.badgeBorderFrom, "--badgeTo": t.badgeBorderTo, "--iconFrom": t.iconGradFrom, "--iconTo": t.iconGradTo, "--titleGradFrom": t.titleGradFrom, "--titleGradTo": t.titleGradTo, "--navText": t.navTextColor, "--focusBg": t.focusBg, "--sectionBg": t.sectionBg, "--cardBorder": t.cardBorder, "--cardHoverShadow": t.cardHoverShadow, "--statsBg": t.statsBg, "--footerBg": t.footerBg, "--footerText": t.footerText, "--footerBgImage": `url('${footerBgImageUrl}')`, "--heroOverlayFrom": t.heroOverlayFrom, "--heroOverlayTo": t.heroOverlayTo, fontFamily: t.fontFamily }}>
-      <header className="stickyHeader">
-        <div className="l-header container">
-          <div className="l-logoWrap">{i.logoUrl ? <img src={i.logoUrl} alt="logo" className="l-logo" /> : <div className="logoFallback">N</div>}</div>
-          <button className="menuToggle" onClick={() => setMenuOpen((v) => !v)}>☰</button>
-          <nav className={`l-nav ${menuOpen ? "open" : ""}`}>{navs.map((x) => <a key={x.label} href={x.href}>{x.label}</a>)}</nav>
-          <button className="l-btn hideMobile" onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}>{c.navCta}</button>
-        </div>
-      </header>
+      <Header i={i} navs={navs} c={c} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      <HeroSection c={c} companyName={companyName} heroPrefix={heroPrefix} heroHighlight={heroHighlight} subtitleHtml={subtitleHtml} heroVideoUrl={heroVideoUrl} chips={chips} />
+      <GoalsSection c={c} goals={goals} goalIcons={goalIcons} />
 
-      <section id="hero" className="l-hero reveal">
-        <video className="heroVideo" autoPlay muted loop playsInline preload="metadata"><source src={heroVideoUrl} type="video/mp4" /></video>
-        <div className="heroOverlay" />
-        <div className="heroNet" />
-        <div className="container heroInner">
-          <span className="l-badge"><Star size={14} /> {c.heroBadge}</span>
-          <h1>{heroPrefix} <span className="titleGradient">{heroHighlight.replaceAll("TrustXLabs", companyName)}</span></h1>
-          <p dangerouslySetInnerHTML={{ __html: subtitleHtml }} />
-          <div className="l-rowCenter"><button className="l-btn">{c.cta}</button><button className="l-btn ghost">{c.cta2}</button></div>
-          <div className="chipRow">{chips.map((x) => <span key={x}>{x}</span>)}</div>
-        </div>
-      </section>
+      <section className="container l-section split reveal"><div><h2>{c.functionsTitle}</h2><ul>{[c.function1, c.function2, c.function3, c.function4, c.function5, c.function6].filter(Boolean).map((x) => <li key={x}>{x}</li>)}</ul></div><div className="artBox"><div className="diamond" /></div></section>
 
-      <section id="goals" className="container l-section center reveal">
-        <h2>{c.goalsTitle}</h2><p>{c.goalsSubtitle}</p>
-        <div className="l-grid4">{goals.map(([title, desc], idx) => { const Icon = goalIcons[idx]; return <article key={title} className="l-card"><div className="iconBox"><Icon size={18} /></div><h3>{title}</h3><p>{desc}</p></article>; })}</div>
-      </section>
+      <FocusSection c={c} focuses={focuses} focusIcons={focusIcons} />
 
-      <section className="container l-section split reveal">
-        <div><h2>{c.functionsTitle}</h2><ul>{[c.function1, c.function2, c.function3, c.function4, c.function5, c.function6].filter(Boolean).map((x) => <li key={x}>{x}</li>)}</ul></div>
-        <div className="artBox"><div className="diamond" /></div>
-      </section>
+      <section id="research" className="container l-section center reveal"><h2>{c.researchTitle}</h2><div className="timelineWrap"><div className="timelineLine" />{timeline.map(([title, desc], idx) => { const Icon = timelineIcons[idx]; return <article key={title} className={`timelineCard ${idx % 2 ? "right" : "left"}`}><div className="timelineDot" /><div className="l-card"><div className="iconBox"><Icon size={18} /></div><h3>{title}</h3><p>{desc}</p></div></article>; })}</div><div className="stats">{stats.map(([value, label]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}</div></section>
 
-      <section id="focus" className="focusBand reveal">
-        <div className="container l-section center focusInner">
-          <h2>{c.focusTitle}</h2><p>We focus on four key areas to deliver advanced financial technology solutions.</p>
-          <div className="l-grid2">{focuses.map(([label, title, desc], idx) => { const Icon = focusIcons[idx]; return <article key={title} className="l-card"><small>{label}</small><div className="iconBox"><Icon size={22} /></div><h3>{title}</h3><p>{desc}</p></article>; })}</div>
-        </div>
-      </section>
-
-      <section id="research" className="container l-section center reveal">
-        <h2>{c.researchTitle}</h2>
-        <div className="timelineWrap"><div className="timelineLine" />{timeline.map(([title, desc], idx) => { const Icon = timelineIcons[idx]; return <article key={title} className={`timelineCard ${idx % 2 ? "right" : "left"}`}><div className="timelineDot" /><div className="l-card"><div className="iconBox"><Icon size={18} /></div><h3>{title}</h3><p>{desc}</p></div></article>; })}</div>
-        <div className="stats">{stats.map(([value, label]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}</div>
-      </section>
-
-      <section id="contact" className="container l-section reveal">
-        <h2 className="center">Connect With <span className="titleGradient">{companyName}</span></h2>
-        <div className="contactGrid">
-          <form className="l-card contactForm" onSubmit={(e) => { e.preventDefault(); submitContact(); }}>
-            <h3>{c.formTitle}</h3>
-            <div className="l-grid2"><input placeholder={c.firstNamePlaceholder} value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} /><input placeholder={c.lastNamePlaceholder} value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} /></div>
-            <input placeholder={c.emailPlaceholder} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            <textarea rows={5} placeholder={c.messagePlaceholder} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
-            <button className={`l-btn ${sending ? "loading" : ""}`} type="submit" disabled={sending}>{sending ? "Sending..." : c.submitText}</button>
-          </form>
-          <div className="rightInfo">
-            <div className="l-card"><strong><MapPin size={16}/> {c.addressTitle}:</strong> {c.addressText}</div>
-            <div className="l-card"><strong><Phone size={16}/> {c.phoneTitle}:</strong> {c.phoneText}</div>
-            <div className="l-card"><strong><Mail size={16}/> {c.supportEmailTitle}:</strong> {c.supportEmailText}</div>
-            <div className="l-card"><strong><Clock3 size={16}/> {c.workTimeTitle}:</strong> {c.workTimeText}</div>
-            <iframe className="map" loading="lazy" referrerPolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=10.0302408,105.7689046&z=15&output=embed" />
-          </div>
-        </div>
-      </section>
-
-      <footer id="footer" className="l-footer reveal">
-        <div className="container footCols">
-          <div>
-            <h3>{i.siteTitle}</h3>
-            <p>{c.footerText}</p>
-            <div className="socialRow">
-              <a className="socialIcon" href="#" aria-label="Facebook"><Facebook size={16} /></a>
-              <a className="socialIcon" href="#" aria-label="LinkedIn"><Linkedin size={16} /></a>
-              <a className="socialIcon" href="#" aria-label="Twitter"><Twitter size={16} /></a>
-              <a className="socialIcon" href="#" aria-label="YouTube"><Youtube size={16} /></a>
-            </div>
-          </div>
-
-          <div>
-            <h4>{c.footerCol2Title}</h4>
-            <p>{(c.footerCol2Text || "").split("\n").map((x, idx) => <span key={`${x}-${idx}`}>{x}<br /></span>)}</p>
-          </div>
-
-          <div>
-            <h4>{c.footerCol3Title}</h4>
-            <p>{[c.nav1, c.nav2, c.nav3, c.nav4, c.nav5, c.nav6].filter(Boolean).map((x) => <span key={x}>{x}<br /></span>)}</p>
-          </div>
-
-          <div>
-            <h4>{c.footerCol4Title}</h4>
-            <p>{(c.footerCol4Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p>
-          </div>
-        </div>
-        <div className="copy">© 2025 TrustXLabs. All Rights Reserved.</div>
-      </footer>
+      <ContactSection c={c} companyName={companyName} form={form} setForm={setForm} submitContact={submitContact} sending={sending} />
+      <FooterSection c={c} i={i} />
 
       {showTop && <button className="backTop" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><ArrowUp size={18} /></button>}
     </main>

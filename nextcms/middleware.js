@@ -12,7 +12,8 @@ export async function middleware(req) {
   if (!token) return NextResponse.redirect(new URL("/login", req.url));
   try {
     const { payload } = await jwtDecrypt(token, secret());
-    if (payload.role !== "admin") return NextResponse.redirect(new URL("/", req.url));
+    if (!["admin", "super_admin"].includes(String(payload.role))) return NextResponse.redirect(new URL("/", req.url));
+    if (String(payload.status || "active") !== "active") return NextResponse.redirect(new URL("/login", req.url));
     return NextResponse.next();
   } catch {
     return NextResponse.redirect(new URL("/login", req.url));
