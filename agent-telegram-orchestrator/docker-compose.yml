@@ -1,0 +1,23 @@
+services:
+  orchestrator-web:
+    build: .
+    container_name: agent-orchestrator-web
+    env_file:
+      - .env
+    ports:
+      - "8787:8787"
+    restart: unless-stopped
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./data:/app/data
+
+  orchestrator-telegram:
+    build: .
+    container_name: agent-orchestrator-telegram
+    command: ["node", "src/index.mjs", "--telegram"]
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./data:/app/data

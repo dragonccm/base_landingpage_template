@@ -39,6 +39,21 @@ npm run telegram
 
 Bot dùng long polling (`getUpdates`) và sẽ xử lý các message bắt đầu bằng `/`.
 
+## Web dashboard (PC)
+Chạy dashboard:
+```bash
+npm run web
+```
+Mở: `http://localhost:8787`
+
+Dashboard hỗ trợ:
+- xem timeline run
+- xem artifacts của từng run
+- trigger command trực tiếp từ giao diện
+
+Nếu đặt `WEB_DASHBOARD_TOKEN`, dashboard API yêu cầu header:
+`Authorization: Bearer <token>`
+
 ### Live mode
 - Đặt `OPENCLAW_LIVE_MODE=1` để bot gọi `openclaw agent --json` cho từng role.
 - Có thể map role -> agent id bằng biến môi trường `OPENCLAW_AGENT_*` (xem `.env.example`).

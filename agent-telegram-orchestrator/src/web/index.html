@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Orchestrator Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; background:#0b1020; color:#e6ecff; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+    input, button, textarea { padding:10px; border-radius:8px; border:1px solid #2d3a66; background:#111831; color:#e6ecff; }
+    button { cursor:pointer; }
+    .card { background:#111831; border:1px solid #2d3a66; border-radius:12px; padding:14px; margin:8px 0; }
+    .small { color:#9fb3ff; font-size:12px; }
+    a { color:#9cc3ff; }
+  </style>
+</head>
+<body>
+  <h2>Agent Telegram Orchestrator — Dashboard</h2>
+  <div class="row">
+    <input id="token" placeholder="Bearer token (optional)" style="min-width:320px" />
+    <button onclick="refreshRuns()">Refresh Runs</button>
+  </div>
+
+  <div class="card">
+    <div><b>Run command</b></div>
+    <textarea id="cmd" rows="3" style="width:100%">/plan project=expense-note-mobile scope=full-mvp-react-native</textarea>
+    <div class="row" style="margin-top:10px">
+      <button onclick="runCommand()">Execute</button>
+      <label><input id="dry" type="checkbox" /> force dry-run</label>
+    </div>
+    <pre id="runOut" class="small"></pre>
+  </div>
+
+  <div id="runs"></div>
+
+<script>
+function authHeaders() {
+  const token = document.getElementById('token').value.trim();
+  return token ? { Authorization: 'Bearer ' + token } : {};
+}
+
+async function refreshRuns() {
+  const r = await fetch('/api/runs?limit=30', { headers: { ...authHeaders() } });
+  const data = await r.json();
+  const root = document.getElementById('runs');
+  if (!data.ok) {
+    root.innerHTML = `<div class="card">Error: ${data.error}</div>`;
+    return;
+  }
+  root.innerHTML = data.runs.map(run => `
+    <div class="card">
+      <div><b>${run.runId}</b> — /${run.command}</div>
+      <div class="small">${run.startedAt} | source=${run.source} | profile=${run.profileId || '-'} </div>
+      <div>${run.summary}</div>
+      <div class="small">${(run.artifactPaths || []).map(p=>`<div>${p}</div>`).join('')}</div>
+    </div>`).join('');
+}
+
+async function runCommand() {
+  const command = document.getElementById('cmd').value.trim();
+  const dryRun = document.getElementById('dry').checked;
+  const out = document.getElementById('runOut');
+  out.textContent = 'Running...';
+  const r = await fetch('/api/command', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ command, dryRun })
+  });
+  const data = await r.json();
+  out.textContent = JSON.stringify(data, null, 2);
+  refreshRuns();
+}
+
+refreshRuns();
+</script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 import { handleMessage } from "./core.mjs";
 import { runTelegramPolling } from "./telegramBot.mjs";
+import { runWebServer } from "./webServer.mjs";
 import { loadDotEnv } from "./env.mjs";
 
 async function main() {
@@ -7,9 +8,15 @@ async function main() {
 
   const isDemo = process.argv.includes("--demo");
   const isTelegram = process.argv.includes("--telegram");
+  const isWeb = process.argv.includes("--web");
 
   if (isTelegram) {
     await runTelegramPolling();
+    return;
+  }
+
+  if (isWeb) {
+    await runWebServer();
     return;
   }
 
@@ -32,7 +39,7 @@ async function main() {
 
   const input = process.argv.slice(2).join(" ");
   if (!input) {
-    console.log("Usage:\n  npm run demo\n  npm run telegram\n  npm start -- \"/plan project=expense-note-mobile scope=mvp\"");
+    console.log("Usage:\n  npm run demo\n  npm run telegram\n  npm run web\n  npm start -- \"/plan project=expense-note-mobile scope=mvp\"");
     return;
   }
 

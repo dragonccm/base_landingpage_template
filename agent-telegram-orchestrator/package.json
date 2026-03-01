@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/index.mjs",
     "demo": "node src/index.mjs --demo",
-    "telegram": "node src/index.mjs --telegram"
+    "telegram": "node src/index.mjs --telegram",
+    "web": "node src/index.mjs --web"
   }
 }

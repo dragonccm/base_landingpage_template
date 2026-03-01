@@ -1,4 +1,4 @@
-import { handleMessage } from "./core.mjs";
+import { handleMessageDetailed } from "./core.mjs";
 
 const TELEGRAM_API = "https://api.telegram.org";
 const SENSITIVE_COMMANDS = new Set(["code:auto", "debug"]);
@@ -124,8 +124,8 @@ export async function runTelegramPolling() {
 
           pendingConfirms.delete(key);
           await sendMessage(token, chatId, `⏳ Running ${pending.commandText}`, msg.message_id);
-          const reply = await handleMessage(pending.commandText, { dryRun: !liveMode });
-          await sendMessage(token, chatId, reply, msg.message_id);
+          const result = await handleMessageDetailed(pending.commandText, { dryRun: !liveMode, source: "telegram" });
+          await sendMessage(token, chatId, result.reply, msg.message_id);
           continue;
         }
 
@@ -148,8 +148,8 @@ export async function runTelegramPolling() {
         }
 
         await sendMessage(token, chatId, `⏳ Running /${cmd}...`, msg.message_id);
-        const reply = await handleMessage(text, { dryRun: !liveMode });
-        await sendMessage(token, chatId, reply, msg.message_id);
+        const result = await handleMessageDetailed(text, { dryRun: !liveMode, source: "telegram" });
+        await sendMessage(token, chatId, result.reply, msg.message_id);
       }
     } catch (err) {
       console.error("Polling loop error:", err.message);
