@@ -54,7 +54,7 @@ export async function runTelegramPolling() {
 
   let offset = 0;
   console.log("Telegram bot polling started.");
-  console.log(`Mode: ${liveMode ? "live" : "dry-run"}`);
+  console.log(`Mode: ${liveMode ? "live via openclaw agent CLI" : "dry-run"}`);
 
   while (true) {
     try {

@@ -1,7 +1,10 @@
 import { handleMessage } from "./core.mjs";
 import { runTelegramPolling } from "./telegramBot.mjs";
+import { loadDotEnv } from "./env.mjs";
 
 async function main() {
+  loadDotEnv();
+
   const isDemo = process.argv.includes("--demo");
   const isTelegram = process.argv.includes("--telegram");
 

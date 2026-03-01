@@ -39,6 +39,11 @@ npm run telegram
 
 Bot dùng long polling (`getUpdates`) và sẽ xử lý các message bắt đầu bằng `/`.
 
+### Live mode
+- Đặt `OPENCLAW_LIVE_MODE=1` để bot gọi `openclaw agent --json` cho từng role.
+- Có thể map role -> agent id bằng biến môi trường `OPENCLAW_AGENT_*` (xem `.env.example`).
+- Nếu không map, hệ thống dùng `OPENCLAW_AGENT_DEFAULT` (mặc định `main`).
+
 ### Project profile mẫu
 Đã có profile sẵn cho chủ đề bạn đề xuất:
 - `project-profiles/expense-note-mobile.json`

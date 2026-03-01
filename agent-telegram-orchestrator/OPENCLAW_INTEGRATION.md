@@ -1,28 +1,39 @@
-# OpenClaw Integration Plan (Live Mode)
+# OpenClaw Integration (Live Mode)
 
-## Mục tiêu
-Thay `dry-run` trong `src/openclawClient.mjs` bằng chế độ gọi OpenClaw sessions thật.
+## Trạng thái hiện tại
+Đã tích hợp live mode trong `src/openclawClient.mjs` thông qua CLI:
+- `openclaw agent --agent <id> --message <task> --json --timeout <sec>`
 
-## Contract đề xuất
+`OPENCLAW_LIVE_MODE=1` sẽ bật chế độ này.
+
+## Contract runtime
 `openclawClient.spawn({ role, runtime, task })` sẽ:
-1. `sessions_spawn` với `runtime` tương ứng (`subagent` hoặc `acp`)
-2. Gửi task role-specific vào session bằng `sessions_send`
-3. Nhận response cuối cùng và trả về `{ sessionKey, role, runtime, result }`
+1. Resolve `agentId` theo mapping env (`OPENCLAW_AGENT_*`)
+2. Gọi `openclaw agent` 1 turn
+3. Parse JSON output và chuẩn hóa về `{ sessionKey, role, runtime, result }`
+
+## Agent mapping
+- Subagent roles: `OPENCLAW_AGENT_SUBAGENT_<ROLE>`
+- ACP roles: `OPENCLAW_AGENT_ACP_<ROLE>`
+- Fallback: `OPENCLAW_AGENT_DEFAULT` (mặc định `main`)
+
+Ví dụ:
+- `OPENCLAW_AGENT_SUBAGENT_REQUIREMENTS=requirements`
+- `OPENCLAW_AGENT_SUBAGENT_PLANNER=planner`
+- `OPENCLAW_AGENT_ACP_DEVELOPER=developer`
 
 ## Runtime policy
 - subagent: scout, requirements, planner, researcher, reviewer, docs, tracker
 - acp: developer, tester, debugger
 
-## ACP notes
-- Với `runtime: "acp"`, set `agentId` rõ ràng theo harness bạn chọn.
-- Trên Discord nên thread-bound session; Telegram có thể dùng run mode hoặc session mode tùy workload.
-
 ## Error handling
-- Timeout: trả partial result + hướng dẫn retry
-- Spawn fail: fallback sang subagent (nếu phù hợp), hoặc fail-fast
-- Session closed: retry 1 lần với context rút gọn
+- Timeout / CLI error: trả `[LIVE_ERROR] ...` vào report để không mất trace run.
+- Bot vẫn tiếp tục workflow và phản hồi artifact.
 
 ## Security checklist
 - Whitelist Telegram user ID/group ID
 - Secrets không ghi vào artifact
 - Command nhạy cảm yêu cầu confirm
+
+## Ghi chú nâng cấp tiếp
+Nếu cần session orchestration sâu hơn (spawn/send/poll), có thể chuyển qua OpenClaw tool runtime nội bộ hoặc custom gateway plugin.
