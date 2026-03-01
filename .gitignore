@@ -1,0 +1,25 @@
+# Dependencies
+**/node_modules/
+
+# Build outputs
+**/.next/
+**/dist/
+**/build/
+
+# Env
+**/.env
+**/.env.*
+
+# Media assets (do not push)
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.webp
+**/*.svg
+**/*.mp4
+**/*.webm
+**/*.mov
+
+# Keep placeholders
+!**/.gitkeep

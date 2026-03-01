@@ -7,3 +7,19 @@ backups/*
 !backups/.gitkeep
 public/uploads/*
 !public/uploads/.gitkeep
+
+# Do not push media files
+public/images/*
+public/videos/*
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.svg
+*.mp4
+*.webm
+*.mov
+
+# Keep placeholders if needed
+!.gitkeep
