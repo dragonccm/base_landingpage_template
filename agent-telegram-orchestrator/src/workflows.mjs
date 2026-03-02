@@ -1,8 +1,12 @@
 import { readdir } from "node:fs/promises";
 import path from "node:path";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
 import { buildRoleTask } from "./prompts.mjs";
 import { validateCodeAutoRoleRuns } from "./validators.mjs";
 import { scaffoldProject } from "./projectScaffold.mjs";
+
+const execAsync = promisify(exec);
 
 function hasLiveErrors(roleRuns) {
   return roleRuns.some((r) => (r.result || "").includes("[LIVE_ERROR]"));
@@ -16,6 +20,24 @@ function parseGateReport(text = "") {
   const nextAction = t.match(/NEXT_ACTION\s*:\s*(.+)/i)?.[1]?.trim() || "";
   const structured = Boolean(status && reason && summary && nextAction);
   return { status, reason, summary, nextAction, structured };
+}
+
+function classifyFailure(text = "") {
+  const t = String(text || "").toLowerCase();
+  if (t.includes("[live_error]")) return "runtime_error";
+  if (t.includes("critical") || t.includes("security")) return "security_gate";
+  if (t.includes("test") || t.includes("assert") || t.includes("spec")) return "test_gate";
+  if (t.includes("build") || t.includes("compile")) return "build_gate";
+  return "quality_gate";
+}
+
+async function runReleaseVerification(templatePath) {
+  try {
+    const { stdout } = await execAsync("npm run verify:release", { cwd: templatePath, windowsHide: true });
+    return { ok: true, output: stdout?.trim() || "verify:release passed" };
+  } catch (error) {
+    return { ok: false, output: error?.stdout || error?.message || "verify:release failed" };
+  }
 }
 
 function gatePassed(text = "") {
@@ -128,8 +150,18 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
 
   if (cmd === "autoflow") {
     const maxLoops = Number(input.args.maxLoops || 2);
+    const stageMaxRetries = {
+      intake: Number(input.args.retryIntake || 1),
+      plan: Number(input.args.retryPlan || 1),
+      build: Number(input.args.retryBuild || 1),
+      test: Number(input.args.retryTest || 1),
+      security: Number(input.args.retrySecurity || 1),
+      release: Number(input.args.retryRelease || 0)
+    };
+
     let loop = 0;
     const stageRuns = [];
+    const failures = [];
 
     const runStage = async (stage, role, runtime, extra = "") => {
       const out = await openclaw.spawn({
@@ -141,41 +173,59 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
       return out;
     };
 
+    const runStageWithRetry = async (stage, role, runtime, extra = "") => {
+      const retries = stageMaxRetries[stage] ?? 0;
+      let attempt = 0;
+      let last = null;
+      while (attempt <= retries) {
+        last = await runStage(stage, role, runtime, `${extra}\nAttempt: ${attempt + 1}/${retries + 1}`);
+        if (gatePassed(last.result)) return { ok: true, out: last, attempts: attempt + 1 };
+        attempt += 1;
+      }
+      failures.push({ stage, type: classifyFailure(last?.result), attempts: retries + 1, output: last?.result || "" });
+      return { ok: false, out: last, attempts: retries + 1 };
+    };
+
     while (loop <= maxLoops) {
-      const intake = await runStage("intake", "intake", "subagent");
-      if (!gatePassed(intake.result)) {
+      const intakeStep = await runStageWithRetry("intake", "intake", "subagent");
+      if (!intakeStep.ok) { loop += 1; continue; }
+      const intake = intakeStep.out;
+
+      const planStep = await runStageWithRetry("plan", "planner", "subagent", `Input from intake:\n${intake.result}`);
+      if (!planStep.ok) { loop += 1; continue; }
+      const plan = planStep.out;
+
+      const buildStep = await runStageWithRetry("build", "developer", "acp", `Plan:\n${plan.result}`);
+      if (!buildStep.ok) { loop += 1; continue; }
+      const build = buildStep.out;
+
+      const testStep = await runStageWithRetry("test", "tester", "acp", `Build output:\n${build.result}`);
+      if (!testStep.ok) {
+        await runStage("rework-build", "developer", "acp", `Fix test issues:\n${testStep.out?.result || ""}`);
         loop += 1;
         continue;
       }
+      const test = testStep.out;
 
-      const plan = await runStage("plan", "planner", "subagent", `Input from intake:\n${intake.result}`);
-      if (!gatePassed(plan.result)) {
+      const securityStep = await runStageWithRetry("security", "security", "subagent", `Build/Test outputs:\n${build.result}\n${test.result}`);
+      if (!securityStep.ok) {
+        await runStage("rework-security", "developer", "acp", `Fix security findings:\n${securityStep.out?.result || ""}`);
         loop += 1;
         continue;
       }
+      const security = securityStep.out;
 
-      const build = await runStage("build", "developer", "acp", `Plan:\n${plan.result}`);
-      if (!gatePassed(build.result)) {
-        loop += 1;
-        continue;
+      const releaseStep = await runStageWithRetry("release", "devops", "acp", `All previous outputs ready for release checks.`);
+      const release = releaseStep.out;
+      let passed = releaseStep.ok;
+
+      const templatePath = input.args.templatePath || path.resolve(process.cwd(), "..", "nextcms");
+      const releaseVerify = await runReleaseVerification(templatePath);
+      stageRuns.push({ stage: "release-verify", role: "local-release-check", runtime: "local", result: releaseVerify.output });
+      if (!releaseVerify.ok) {
+        passed = false;
+        failures.push({ stage: "release-verify", type: "release_gate", attempts: 1, output: releaseVerify.output });
       }
-
-      const test = await runStage("test", "tester", "acp", `Build output:\n${build.result}`);
-      if (!gatePassed(test.result)) {
-        await runStage("rework-build", "developer", "acp", `Fix test issues:\n${test.result}`);
-        loop += 1;
-        continue;
-      }
-
-      const security = await runStage("security", "security", "subagent", `Build/Test outputs:\n${build.result}\n${test.result}`);
-      if (!gatePassed(security.result)) {
-        await runStage("rework-security", "developer", "acp", `Fix security findings:\n${security.result}`);
-        loop += 1;
-        continue;
-      }
-
-      const release = await runStage("release", "devops", "acp", `All previous outputs ready for release checks.`);
-      const passed = gatePassed(release.result);
 
       return {
         summary: passed
@@ -197,7 +247,11 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
           },
           {
             name: "release-report.md",
-            content: `# Release Report\n\n${release.result}`
+            content: `# Release Report\n\n${release.result}\n\n## Local verify:release\n\n${releaseVerify.output}`
+          },
+          {
+            name: "failure-taxonomy.md",
+            content: `# Failure Taxonomy\n\n${failures.length ? failures.map((f) => `- stage=${f.stage} | type=${f.type} | attempts=${f.attempts}`).join("\n") : "- none"}`
           }
         ]
       };
@@ -222,6 +276,10 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
         {
           name: "release-report.md",
           content: "# Release Report\n\nRelease not reached due to failed gates."
+        },
+        {
+          name: "failure-taxonomy.md",
+          content: `# Failure Taxonomy\n\n${failures.length ? failures.map((f) => `- stage=${f.stage} | type=${f.type} | attempts=${f.attempts}`).join("\n") : "- unknown"}`
         }
       ]
     };

@@ -29,12 +29,19 @@ Failed gate behavior:
 - security fail -> run rework-security then loop again
 
 ## Command
-`/autoflow <requirement text> [maxLoops=2]`
+`/autoflow <requirement text> [maxLoops=2] [templatePath=../nextcms]`
+
+Optional stage retries:
+- `retryIntake`, `retryPlan`, `retryBuild`, `retryTest`, `retrySecurity`, `retryRelease`
+
+Release stage additionally runs local verification:
+- `npm run verify:release` in `templatePath`
 
 ## Artifacts
 - `autoflow-summary.md`
 - `gate-report.md`
 - `release-report.md`
+- `failure-taxonomy.md`
 
 ## Current readiness
 - v1 is operational but heuristic-based (keyword gate detection).

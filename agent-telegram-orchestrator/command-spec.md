@@ -158,6 +158,8 @@
 **Args:**
 - free text yêu cầu dự án (required)
 - `maxLoops` (optional, mặc định 2)
+- `templatePath` (optional, mặc định `../nextcms`, dùng cho `npm run verify:release`)
+- retry theo stage (optional): `retryIntake`, `retryPlan`, `retryBuild`, `retryTest`, `retrySecurity`, `retryRelease`
 
 **Flow chuẩn:**
 - intake -> plan -> build -> test -> security -> release
@@ -168,6 +170,7 @@
 - `artifacts/autoflow/<run>/autoflow-summary.md`
 - `artifacts/autoflow/<run>/gate-report.md`
 - `artifacts/autoflow/<run>/release-report.md`
+- `artifacts/autoflow/<run>/failure-taxonomy.md`
 
 ---
 
