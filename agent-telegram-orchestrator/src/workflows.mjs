@@ -8,6 +8,13 @@ function hasLiveErrors(roleRuns) {
   return roleRuns.some((r) => (r.result || "").includes("[LIVE_ERROR]"));
 }
 
+function gatePassed(text = "") {
+  const t = text.toLowerCase();
+  if (t.includes("[live_error]")) return false;
+  if (t.includes("fail") || t.includes("failed") || t.includes("critical") || t.includes("blocker")) return false;
+  return true;
+}
+
 async function collectArtifactStats() {
   const root = path.resolve(process.cwd(), "artifacts");
   const commands = ["brainstorm", "plan", "code-auto", "code-review", "debug", "watzup"];
@@ -100,6 +107,101 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
       files: [
         { name: "cook-summary.md", content: `# Cook Summary\n\n## Requirement\n${requirement.result}\n\n## Plan\n${planRun.result}\n\n## Delivery\n- Stack: ${scaffold.stack}\n- Project: ${scaffold.projectName}\n- Path: ${scaffold.projectDir}\n` },
         { name: "project-output.md", content: `# Project Output\n\nProject folder: ${scaffold.projectDir}\n\n## Agent Execution\n- Developer: ${dev.result}\n- Tester: ${tester.result}\n- Reviewer: ${reviewer.result}\n- Docs: ${docs.result}\n\n## Run\n1. cd \"${scaffold.projectDir}\"\n2. npm install\n3. Follow README.md\n` }
+      ]
+    };
+  }
+
+  if (cmd === "autoflow") {
+    const maxLoops = Number(input.args.maxLoops || 2);
+    let loop = 0;
+    const stageRuns = [];
+
+    const runStage = async (stage, role, runtime, extra = "") => {
+      const out = await openclaw.spawn({
+        role,
+        runtime,
+        task: `${buildRoleTask({ role, command: cmd, input, projectContext })}\nStage: ${stage}\n${extra}`
+      });
+      stageRuns.push({ stage, ...out });
+      return out;
+    };
+
+    while (loop <= maxLoops) {
+      const intake = await runStage("intake", "intake", "subagent");
+      if (!gatePassed(intake.result)) {
+        loop += 1;
+        continue;
+      }
+
+      const plan = await runStage("plan", "planner", "subagent", `Input from intake:\n${intake.result}`);
+      if (!gatePassed(plan.result)) {
+        loop += 1;
+        continue;
+      }
+
+      const build = await runStage("build", "developer", "acp", `Plan:\n${plan.result}`);
+      if (!gatePassed(build.result)) {
+        loop += 1;
+        continue;
+      }
+
+      const test = await runStage("test", "tester", "acp", `Build output:\n${build.result}`);
+      if (!gatePassed(test.result)) {
+        await runStage("rework-build", "developer", "acp", `Fix test issues:\n${test.result}`);
+        loop += 1;
+        continue;
+      }
+
+      const security = await runStage("security", "security", "subagent", `Build/Test outputs:\n${build.result}\n${test.result}`);
+      if (!gatePassed(security.result)) {
+        await runStage("rework-security", "developer", "acp", `Fix security findings:\n${security.result}`);
+        loop += 1;
+        continue;
+      }
+
+      const release = await runStage("release", "devops", "acp", `All previous outputs ready for release checks.`);
+      const passed = gatePassed(release.result);
+
+      return {
+        summary: passed
+          ? `Autoflow completed successfully in ${loop + 1} loop(s).`
+          : `Autoflow reached release stage but failed gate.`,
+        files: [
+          {
+            name: "autoflow-summary.md",
+            content: `# Autoflow Summary\n\n- Loops used: ${loop + 1}\n- Max loops: ${maxLoops}\n- Final status: ${passed ? "PASSED" : "FAILED"}\n`
+          },
+          {
+            name: "gate-report.md",
+            content: `# Gate Report\n\n${stageRuns
+              .map((r) => `## ${r.stage}\n- role: ${r.role}\n- runtime: ${r.runtime}\n- pass: ${gatePassed(r.result) ? "YES" : "NO"}\n- output: ${r.result}`)
+              .join("\n\n")}`
+          },
+          {
+            name: "release-report.md",
+            content: `# Release Report\n\n${release.result}`
+          }
+        ]
+      };
+    }
+
+    return {
+      summary: `Autoflow failed after ${maxLoops + 1} loop(s). Check gate report.`,
+      files: [
+        {
+          name: "autoflow-summary.md",
+          content: `# Autoflow Summary\n\n- Loops used: ${maxLoops + 1}\n- Final status: FAILED (max loops reached)`
+        },
+        {
+          name: "gate-report.md",
+          content: `# Gate Report\n\n${stageRuns
+            .map((r) => `## ${r.stage}\n- role: ${r.role}\n- runtime: ${r.runtime}\n- pass: ${gatePassed(r.result) ? "YES" : "NO"}\n- output: ${r.result}`)
+            .join("\n\n")}`
+        },
+        {
+          name: "release-report.md",
+          content: "# Release Report\n\nRelease not reached due to failed gates."
+        }
       ]
     };
   }

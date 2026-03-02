@@ -152,7 +152,26 @@
 
 ---
 
-## 9. /clear
+## 9. /autoflow
+**Mục đích:** chạy pipeline đa agent end-to-end với gate và auto loop-back khi fail.
+
+**Args:**
+- free text yêu cầu dự án (required)
+- `maxLoops` (optional, mặc định 2)
+
+**Flow chuẩn:**
+- intake -> plan -> build -> test -> security -> release
+- nếu test/security fail: tự quay lại build để fix rồi chạy lại
+- nếu input stage không đạt: quay lại stage trước đó
+
+**Artifacts:**
+- `artifacts/autoflow/<run>/autoflow-summary.md`
+- `artifacts/autoflow/<run>/gate-report.md`
+- `artifacts/autoflow/<run>/release-report.md`
+
+---
+
+## 10. /clear
 **Mục đích:** reset context phiên làm việc.
 
 **Hành vi:**

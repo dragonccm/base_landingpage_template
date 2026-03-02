@@ -13,6 +13,7 @@ Hệ thống điều phối nhiều agent thông qua lệnh chat Telegram.
 - `/plan`
 - `/code:auto`
 - `/cook` (all-in-one -> source project)
+- `/autoflow` (multi-agent pipeline with gate + loop-back)
 - `/debug`
 - `/code:review`
 - `/watzup`

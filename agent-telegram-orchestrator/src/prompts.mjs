@@ -11,7 +11,12 @@ export function buildRoleTask({ role, command, input, projectContext }) {
     reviewer: "Review for correctness, maintainability, and security risks.",
     debugger: "Perform root-cause analysis from logs and suggest minimal-risk fix + regression tests.",
     tracker: "Summarize project health, bottlenecks, and next best actions.",
-    docs: "Update technical docs/specs to reflect implementation and behavior changes."
+    docs: "Update technical docs/specs to reflect implementation and behavior changes.",
+    intake: "Normalize requirements input into clear scope, constraints, and acceptance criteria.",
+    security: "Review implementation for auth/validation/secret/rate-limit risks and provide severity-based findings.",
+    devops: "Validate build/release readiness, rollout checklist, and rollback instructions.",
+    integration: "Validate FE/BE integration contracts and identify mismatch risks.",
+    qc: "Create test plan and product-level quality checklist with pass/fail criteria."
   };
 
   const strictTemplate =

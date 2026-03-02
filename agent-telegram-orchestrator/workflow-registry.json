@@ -57,5 +57,10 @@
     "runtime": "local",
     "roles": [],
     "artifacts": []
+  },
+  "autoflow": {
+    "runtime": "hybrid",
+    "roles": ["intake", "planner", "developer", "tester", "security", "devops"],
+    "artifacts": ["autoflow-summary.md", "gate-report.md", "release-report.md"]
   }
 }
