@@ -162,6 +162,12 @@ export const defaultSettings = {
     maxLoginAttempts: "5",
     loginBlockMinutes: "30",
     maxContactPerHour: "20",
+    passwordMinLength: "10",
+    require2FAForAdmin: "false",
+    sessionTimeoutMinutes: "120",
+    rateLimitPerMinute: "60",
+    cspEnabled: "true",
+    auditRetentionDays: "90",
   },
 };
 
@@ -238,6 +244,13 @@ export async function ensureSchema() {
 
     ALTER TABLE users ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'active';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS title TEXT;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS company TEXT;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS website TEXT;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS linkedin_url TEXT;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS twitter_url TEXT;
 
     ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS id TEXT;
     ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS actor_id TEXT;
@@ -375,15 +388,29 @@ export async function findUserByEmail(email) {
 
 export async function listUsers() {
   await ensureSchema();
-  const { rows } = await pool.query("SELECT id,name,email,role,status,created_at,updated_at FROM users ORDER BY created_at ASC");
+  const { rows } = await pool.query("SELECT id,name,email,role,status,bio,avatar_url,title,company,website,linkedin_url,twitter_url,created_at,updated_at FROM users ORDER BY created_at ASC");
   return rows;
 }
 
 export async function createUser(user) {
   await ensureSchema();
   await pool.query(
-    "INSERT INTO users (id,name,email,password_hash,role,status,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,NOW(),NOW())",
-    [user.id, user.name, user.email, user.passwordHash, user.role || "admin", user.status || "active"]
+    "INSERT INTO users (id,name,email,password_hash,role,status,bio,avatar_url,title,company,website,linkedin_url,twitter_url,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,NOW(),NOW())",
+    [
+      user.id,
+      user.name,
+      user.email,
+      user.passwordHash,
+      user.role || "admin",
+      user.status || "active",
+      user.bio || null,
+      user.avatarUrl || null,
+      user.title || null,
+      user.company || null,
+      user.website || null,
+      user.linkedinUrl || null,
+      user.twitterUrl || null,
+    ]
   );
 }
 

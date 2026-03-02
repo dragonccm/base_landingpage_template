@@ -15,7 +15,7 @@ export async function POST(req) {
   const guard = await requireSuperAdmin();
   if (guard.error) return guard.error;
 
-  const { name, email, password, role } = await req.json();
+  const { name, email, password, role, bio, avatarUrl, title, company, website, linkedinUrl, twitterUrl } = await req.json();
   if (!name || !email || !password) return NextResponse.json({ error: "Missing name/email/password" }, { status: 400 });
   const exist = await findUserByEmail(email);
   if (exist) return NextResponse.json({ error: "Email already exists" }, { status: 400 });
@@ -30,6 +30,13 @@ export async function POST(req) {
     passwordHash,
     role: safeRole,
     status: "active",
+    bio,
+    avatarUrl,
+    title,
+    company,
+    website,
+    linkedinUrl,
+    twitterUrl,
   });
 
   await auditAdminAction(req, guard.user, "users.create", "users", { userId, email: String(email).toLowerCase(), role });
