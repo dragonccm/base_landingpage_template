@@ -39,6 +39,8 @@ npm run verify:deploy
 
 - `DEPLOYMENT.md`: hướng dẫn deploy/rollback/troubleshooting/verify
 - `AGENTS.md`: quy ước làm việc cho agent/dev
+- `docs/PROJECT_CHARTER_V1.md`: charter kiến trúc + nguyên tắc dự án
+- `docs/TEMPLATE_BASELINE_POLICY.md`: xác nhận `nextcms` là template gốc cho các web
 
 ## Lưu ý vận hành
 
