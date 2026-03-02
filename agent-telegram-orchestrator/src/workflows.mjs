@@ -2,11 +2,13 @@ import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
+import gatePolicy from "../gate-policy.json" with { type: "json" };
 import { buildRoleTask } from "./prompts.mjs";
 import { validateCodeAutoRoleRuns } from "./validators.mjs";
 import { scaffoldProject } from "./projectScaffold.mjs";
 
 const execAsync = promisify(exec);
+const autoflowPolicy = gatePolicy?.autoflow || {};
 
 function hasLiveErrors(roleRuns) {
   return roleRuns.some((r) => (r.result || "").includes("[LIVE_ERROR]"));
@@ -22,18 +24,24 @@ function parseGateReport(text = "") {
   return { status, reason, summary, nextAction, structured };
 }
 
-function classifyFailure(text = "") {
+function matchAny(text = "", words = []) {
   const t = String(text || "").toLowerCase();
-  if (t.includes("[live_error]")) return "runtime_error";
-  if (t.includes("critical") || t.includes("security")) return "security_gate";
-  if (t.includes("test") || t.includes("assert") || t.includes("spec")) return "test_gate";
-  if (t.includes("build") || t.includes("compile")) return "build_gate";
+  return words.some((w) => t.includes(String(w).toLowerCase()));
+}
+
+function classifyFailure(text = "") {
+  const map = autoflowPolicy.failureKeywords || {};
+  if (matchAny(text, map.runtime_error || [])) return "runtime_error";
+  if (matchAny(text, map.security_gate || [])) return "security_gate";
+  if (matchAny(text, map.test_gate || [])) return "test_gate";
+  if (matchAny(text, map.build_gate || [])) return "build_gate";
   return "quality_gate";
 }
 
 async function runReleaseVerification(templatePath) {
+  const cmd = autoflowPolicy.releaseVerifyCommand || "npm run verify:release";
   try {
-    const { stdout } = await execAsync("npm run verify:release", { cwd: templatePath, windowsHide: true });
+    const { stdout } = await execAsync(cmd, { cwd: templatePath, windowsHide: true });
     return { ok: true, output: stdout?.trim() || "verify:release passed" };
   } catch (error) {
     return { ok: false, output: error?.stdout || error?.message || "verify:release failed" };
@@ -41,14 +49,25 @@ async function runReleaseVerification(templatePath) {
 }
 
 function gatePassed(text = "") {
-  const t = text.toLowerCase();
-  if (t.includes("[live_error]")) return false;
-
+  const t = String(text || "").toLowerCase();
   const report = parseGateReport(text);
-  if (report.status) return report.status === "PASS" && report.structured;
+  const requireStructured = autoflowPolicy.requireStructuredGate !== false;
 
-  // fallback heuristic for backward compatibility
-  if (t.includes("fail") || t.includes("failed") || t.includes("critical") || t.includes("blocker")) return false;
+  if (t.includes("[dry_run]")) return true;
+  if (matchAny(t, autoflowPolicy?.failureKeywords?.runtime_error || ["[live_error]"])) return false;
+
+  if (report.status) {
+    if (requireStructured && !report.structured) return false;
+    return report.status === "PASS";
+  }
+
+  if (requireStructured) return false;
+
+  const fallbackWords = [
+    ...(autoflowPolicy?.failureKeywords?.quality_gate || []),
+    ...(autoflowPolicy?.failureKeywords?.security_gate || [])
+  ];
+  if (matchAny(t, fallbackWords)) return false;
   return true;
 }
 
@@ -149,14 +168,15 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
   }
 
   if (cmd === "autoflow") {
-    const maxLoops = Number(input.args.maxLoops || 2);
+    const defaultRetries = autoflowPolicy.defaultRetries || {};
+    const maxLoops = Number(input.args.maxLoops || autoflowPolicy.defaultMaxLoops || 2);
     const stageMaxRetries = {
-      intake: Number(input.args.retryIntake || 1),
-      plan: Number(input.args.retryPlan || 1),
-      build: Number(input.args.retryBuild || 1),
-      test: Number(input.args.retryTest || 1),
-      security: Number(input.args.retrySecurity || 1),
-      release: Number(input.args.retryRelease || 0)
+      intake: Number(input.args.retryIntake || defaultRetries.intake || 1),
+      plan: Number(input.args.retryPlan || defaultRetries.plan || 1),
+      build: Number(input.args.retryBuild || defaultRetries.build || 1),
+      test: Number(input.args.retryTest || defaultRetries.test || 1),
+      security: Number(input.args.retrySecurity || defaultRetries.security || 1),
+      release: Number(input.args.retryRelease || defaultRetries.release || 0)
     };
 
     let loop = 0;
@@ -219,7 +239,7 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
       const release = releaseStep.out;
       let passed = releaseStep.ok;
 
-      const templatePath = input.args.templatePath || path.resolve(process.cwd(), "..", "nextcms");
+      const templatePath = input.args.templatePath || path.resolve(process.cwd(), autoflowPolicy.releaseVerifyTemplatePath || "..\\nextcms");
       const releaseVerify = await runReleaseVerification(templatePath);
       stageRuns.push({ stage: "release-verify", role: "local-release-check", runtime: "local", result: releaseVerify.output });
       if (!releaseVerify.ok) {

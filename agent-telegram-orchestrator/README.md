@@ -29,6 +29,10 @@ npm run kit:init
 npm run kit:doctor
 ```
 
+## Gate policy config
+- File: `gate-policy.json`
+- Dùng để chỉnh rule gate/retry/release verify cho `/autoflow` mà không cần sửa code.
+
 ## Chạy local (MVP scaffold)
 ```bash
 npm run demo
