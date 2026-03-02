@@ -1,7 +1,8 @@
-import { execFile } from "node:child_process";
+import { exec } from "node:child_process";
 import { promisify } from "node:util";
 
-const execFileAsync = promisify(execFile);
+const execAsync = promisify(exec);
+const OPENCLAW_BIN = process.platform === "win32" ? "openclaw" : "openclaw";
 
 function roleToAgentEnv(role, runtime) {
   const key = `OPENCLAW_AGENT_${runtime.toUpperCase()}_${role.replaceAll("-", "_").toUpperCase()}`;
@@ -23,18 +24,11 @@ function extractReplyText(json) {
 
 async function runOpenClawAgent({ role, runtime, task, timeoutMs }) {
   const agentId = roleToAgentEnv(role, runtime);
-  const args = [
-    "agent",
-    "--agent",
-    agentId,
-    "--message",
-    task,
-    "--json",
-    "--timeout",
-    String(Math.ceil(timeoutMs / 1000))
-  ];
+  const timeoutSec = String(Math.ceil(timeoutMs / 1000));
+  const escapedTask = task.replaceAll('"', '\\"');
+  const cmd = `${OPENCLAW_BIN} agent --agent "${agentId}" --message "${escapedTask}" --json --timeout ${timeoutSec}`;
 
-  const { stdout } = await execFileAsync("openclaw", args, {
+  const { stdout } = await execAsync(cmd, {
     windowsHide: true,
     maxBuffer: 1024 * 1024 * 4,
     timeout: timeoutMs
