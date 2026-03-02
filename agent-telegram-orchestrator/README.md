@@ -64,6 +64,12 @@ Dashboard hỗ trợ:
 - trigger command trực tiếp từ giao diện
 - dùng `/cook` để sinh source project tại `generated-projects/`
 - xem metrics đa agent qua API `GET /api/metrics/autoflow`
+- queue job qua API `POST /api/queue` và xem trạng thái `GET /api/queue`
+
+Chạy worker queue:
+```bash
+npm run worker
+```
 
 Nếu đặt `WEB_DASHBOARD_TOKEN`, dashboard API yêu cầu header:
 `Authorization: Bearer <token>`

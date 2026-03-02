@@ -4,6 +4,7 @@ import path from "node:path";
 import { handleMessageDetailed } from "./core.mjs";
 import { listRuns, getRun } from "./runStore.mjs";
 import { getAutoflowMetrics } from "./metricsStore.mjs";
+import { enqueueJob, listJobs } from "./queueStore.mjs";
 
 const WEB_TOKEN = process.env.WEB_DASHBOARD_TOKEN || "";
 
@@ -66,10 +67,29 @@ export async function runWebServer() {
         return json(res, run ? 200 : 404, run ? { ok: true, run } : { ok: false, error: "Run not found" });
       }
 
+      if (url.pathname === "/api/queue" && req.method === "GET") {
+        const limit = Number(url.searchParams.get("limit") || 100);
+        const jobs = await listJobs(limit);
+        return json(res, 200, { ok: true, jobs });
+      }
+
+      if (url.pathname === "/api/queue" && req.method === "POST") {
+        const body = await readBody(req);
+        const text = String(body.command || "").trim();
+        if (!text.startsWith("/")) return json(res, 400, { ok: false, error: "command must start with /" });
+        const jobId = await enqueueJob(text, "web");
+        return json(res, 202, { ok: true, queued: true, jobId });
+      }
+
       if (url.pathname === "/api/command" && req.method === "POST") {
         const body = await readBody(req);
         const text = String(body.command || "").trim();
         if (!text.startsWith("/")) return json(res, 400, { ok: false, error: "command must start with /" });
+
+        if (body.queue === true) {
+          const jobId = await enqueueJob(text, "web");
+          return json(res, 202, { ok: true, queued: true, jobId });
+        }
 
         const result = await handleMessageDetailed(text, {
           dryRun: body.dryRun === true ? true : !liveMode,
