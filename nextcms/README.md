@@ -34,6 +34,7 @@ npm run migrate:audit
 npm run migrate:blog
 npm run verify:deploy
 npm run verify:template
+npm run verify:release
 ```
 
 ## Tài liệu

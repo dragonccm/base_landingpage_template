@@ -23,3 +23,10 @@ node scripts/template-compliance-check.mjs <target-dir>
 - If template compliance fails => STOP pipeline
 - Route task back to responsible build stage for fix
 - Re-run `verify:template` until PASS
+- Standard release precheck command:
+
+```bash
+npm run verify:release
+```
+
+This runs template compliance first, then deploy verification.
