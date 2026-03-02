@@ -208,9 +208,15 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
     };
 
     let briefText = "";
-    if (input.args.briefFile) {
+    let briefPath = input.args.briefFile || "";
+
+    if (!briefPath && cmd === "ship" && !input.freeText) {
+      briefPath = process.env.SHIP_DEFAULT_BRIEF_FILE || "Whitepaper APTEU.txt";
+    }
+
+    if (briefPath) {
       try {
-        briefText = await readFile(path.resolve(process.cwd(), input.args.briefFile), "utf8");
+        briefText = await readFile(path.resolve(process.cwd(), briefPath), "utf8");
       } catch {
         briefText = "[briefFile read failed]";
       }
@@ -219,6 +225,7 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
     const intakeExtra = [
       input.args.figma ? `Figma: ${input.args.figma}` : "",
       input.args.contentFile ? `Content file: ${input.args.contentFile}` : "",
+      briefPath ? `Brief file: ${briefPath}` : "",
       briefText ? `Brief:\n${briefText}` : ""
     ].filter(Boolean).join("\n\n");
 
