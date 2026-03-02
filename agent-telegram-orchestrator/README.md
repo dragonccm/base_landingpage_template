@@ -29,6 +29,14 @@ npm run kit:init
 npm run kit:doctor
 ```
 
+## Preflight + packaging
+```bash
+npm run kit:preflight
+npm run kit:pack
+```
+
+> Rule: always run `kit:preflight` before `kit:pack`.
+
 ## Gate policy config
 - File: `gate-policy.json`
 - Dùng để chỉnh rule gate/retry/release verify cho `/autoflow` mà không cần sửa code.
