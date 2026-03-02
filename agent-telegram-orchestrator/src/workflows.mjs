@@ -8,9 +8,21 @@ function hasLiveErrors(roleRuns) {
   return roleRuns.some((r) => (r.result || "").includes("[LIVE_ERROR]"));
 }
 
+function parseGateStatus(text = "") {
+  const t = String(text || "");
+  const m = t.match(/GATE_STATUS\s*:\s*(PASS|FAIL)/i);
+  if (m?.[1]) return m[1].toUpperCase();
+  return null;
+}
+
 function gatePassed(text = "") {
   const t = text.toLowerCase();
   if (t.includes("[live_error]")) return false;
+
+  const structured = parseGateStatus(text);
+  if (structured) return structured === "PASS";
+
+  // fallback heuristic for backward compatibility
   if (t.includes("fail") || t.includes("failed") || t.includes("critical") || t.includes("blocker")) return false;
   return true;
 }

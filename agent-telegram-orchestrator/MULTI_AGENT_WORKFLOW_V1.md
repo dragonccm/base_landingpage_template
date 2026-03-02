@@ -12,9 +12,16 @@ Run a full automated delivery pipeline using multiple subagents/ACP roles with e
 6. release (acp)
 
 ## Gate Rule
-A stage output is considered failed when output contains:
-- `[LIVE_ERROR]`
-- `fail`, `failed`, `critical`, `blocker`
+Primary gate signal is **structured output** from each role:
+
+- `GATE_STATUS: PASS|FAIL`
+- `GATE_REASON: ...`
+- `SUMMARY: ...`
+- `NEXT_ACTION: ...`
+
+Engine behavior:
+- Use `GATE_STATUS` as source of truth
+- If missing, fallback to heuristic keyword check (`fail`, `critical`, `[LIVE_ERROR]`)
 
 Failed gate behavior:
 - intake/plan/build fail -> restart loop from intake

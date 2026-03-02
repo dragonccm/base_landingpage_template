@@ -24,5 +24,10 @@ export function buildRoleTask({ role, command, input, projectContext }) {
       ? "\n\nSTRICT OUTPUT FORMAT (required):\n- Changed Files: <list>\n- Commit Hash: <hash-or-none>\n- Test Result: <pass/fail + evidence>\n- Security: <findings/no critical>\n- Docs Updated: <what changed>\n- Next Action: <next step>"
       : "";
 
-  return `${base}\n\nRole: ${role}\nInstruction: ${roleHints[role] || "Complete assigned task with high signal output."}${strictTemplate}`;
+  const autoflowTemplate =
+    command === "autoflow"
+      ? "\n\nSTRICT OUTPUT FORMAT (required):\nGATE_STATUS: PASS|FAIL\nGATE_REASON: <short reason>\nSUMMARY: <short summary>\nNEXT_ACTION: <what should happen next>"
+      : "";
+
+  return `${base}\n\nRole: ${role}\nInstruction: ${roleHints[role] || "Complete assigned task with high signal output."}${strictTemplate}${autoflowTemplate}`;
 }
