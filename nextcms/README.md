@@ -33,6 +33,7 @@ npm run start
 npm run migrate:audit
 npm run migrate:blog
 npm run verify:deploy
+npm run verify:template
 ```
 
 ## Tài liệu
