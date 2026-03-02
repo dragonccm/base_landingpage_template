@@ -63,6 +63,7 @@ Dashboard hỗ trợ:
 - xem artifacts của từng run
 - trigger command trực tiếp từ giao diện
 - dùng `/cook` để sinh source project tại `generated-projects/`
+- xem metrics đa agent qua API `GET /api/metrics/autoflow`
 
 Nếu đặt `WEB_DASHBOARD_TOKEN`, dashboard API yêu cầu header:
 `Authorization: Bearer <token>`

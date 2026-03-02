@@ -6,6 +6,7 @@ import gatePolicy from "../gate-policy.json" with { type: "json" };
 import { buildRoleTask } from "./prompts.mjs";
 import { validateCodeAutoRoleRuns } from "./validators.mjs";
 import { scaffoldProject } from "./projectScaffold.mjs";
+import { recordAutoflowMetrics } from "./metricsStore.mjs";
 
 const execAsync = promisify(exec);
 const autoflowPolicy = gatePolicy?.autoflow || {};
@@ -247,6 +248,7 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
         failures.push({ stage: "release-verify", type: "release_gate", attempts: 1, output: releaseVerify.output });
       }
 
+      await recordAutoflowMetrics({ success: passed, failures });
       return {
         summary: passed
           ? `Autoflow completed successfully in ${loop + 1} loop(s).`
@@ -277,6 +279,7 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
       };
     }
 
+    await recordAutoflowMetrics({ success: false, failures });
     return {
       summary: `Autoflow failed after ${maxLoops + 1} loop(s). Check gate report.`,
       files: [

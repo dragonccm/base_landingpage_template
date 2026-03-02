@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { handleMessageDetailed } from "./core.mjs";
 import { listRuns, getRun } from "./runStore.mjs";
+import { getAutoflowMetrics } from "./metricsStore.mjs";
 
 const WEB_TOKEN = process.env.WEB_DASHBOARD_TOKEN || "";
 
@@ -52,6 +53,11 @@ export async function runWebServer() {
         const limit = Number(url.searchParams.get("limit") || 50);
         const runs = await listRuns(limit);
         return json(res, 200, { ok: true, runs });
+      }
+
+      if (url.pathname === "/api/metrics/autoflow" && req.method === "GET") {
+        const metrics = await getAutoflowMetrics();
+        return json(res, 200, { ok: true, metrics });
       }
 
       if (url.pathname.startsWith("/api/runs/") && req.method === "GET") {
