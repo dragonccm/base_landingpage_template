@@ -7,6 +7,8 @@
     "start": "node src/index.mjs",
     "demo": "node src/index.mjs --demo",
     "telegram": "node src/index.mjs --telegram",
-    "web": "node src/index.mjs --web"
+    "web": "node src/index.mjs --web",
+    "kit:init": "node scripts/kit-init.mjs",
+    "kit:doctor": "node scripts/kit-doctor.mjs"
   }
 }

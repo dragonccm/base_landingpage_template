@@ -23,6 +23,12 @@ Hệ thống điều phối nhiều agent thông qua lệnh chat Telegram.
 - **subagent:** docs, requirement, planning, multi-review text-heavy
 - **acp:** coding, test execution, CI/debug log investigation
 
+## Kit bootstrap (one-command setup)
+```bash
+npm run kit:init
+npm run kit:doctor
+```
+
 ## Chạy local (MVP scaffold)
 ```bash
 npm run demo

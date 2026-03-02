@@ -8,19 +8,22 @@ function hasLiveErrors(roleRuns) {
   return roleRuns.some((r) => (r.result || "").includes("[LIVE_ERROR]"));
 }
 
-function parseGateStatus(text = "") {
+function parseGateReport(text = "") {
   const t = String(text || "");
-  const m = t.match(/GATE_STATUS\s*:\s*(PASS|FAIL)/i);
-  if (m?.[1]) return m[1].toUpperCase();
-  return null;
+  const status = t.match(/GATE_STATUS\s*:\s*(PASS|FAIL)/i)?.[1]?.toUpperCase() || null;
+  const reason = t.match(/GATE_REASON\s*:\s*(.+)/i)?.[1]?.trim() || "";
+  const summary = t.match(/SUMMARY\s*:\s*(.+)/i)?.[1]?.trim() || "";
+  const nextAction = t.match(/NEXT_ACTION\s*:\s*(.+)/i)?.[1]?.trim() || "";
+  const structured = Boolean(status && reason && summary && nextAction);
+  return { status, reason, summary, nextAction, structured };
 }
 
 function gatePassed(text = "") {
   const t = text.toLowerCase();
   if (t.includes("[live_error]")) return false;
 
-  const structured = parseGateStatus(text);
-  if (structured) return structured === "PASS";
+  const report = parseGateReport(text);
+  if (report.status) return report.status === "PASS" && report.structured;
 
   // fallback heuristic for backward compatibility
   if (t.includes("fail") || t.includes("failed") || t.includes("critical") || t.includes("blocker")) return false;
@@ -186,7 +189,10 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
           {
             name: "gate-report.md",
             content: `# Gate Report\n\n${stageRuns
-              .map((r) => `## ${r.stage}\n- role: ${r.role}\n- runtime: ${r.runtime}\n- pass: ${gatePassed(r.result) ? "YES" : "NO"}\n- output: ${r.result}`)
+              .map((r) => {
+                const g = parseGateReport(r.result);
+                return `## ${r.stage}\n- role: ${r.role}\n- runtime: ${r.runtime}\n- pass: ${gatePassed(r.result) ? "YES" : "NO"}\n- structured: ${g.structured ? "YES" : "NO"}\n- gate_status: ${g.status || "(missing)"}\n- gate_reason: ${g.reason || "(missing)"}\n- summary: ${g.summary || "(missing)"}\n- next_action: ${g.nextAction || "(missing)"}\n- output: ${r.result}`;
+              })
               .join("\n\n")}`
           },
           {
@@ -207,7 +213,10 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
         {
           name: "gate-report.md",
           content: `# Gate Report\n\n${stageRuns
-            .map((r) => `## ${r.stage}\n- role: ${r.role}\n- runtime: ${r.runtime}\n- pass: ${gatePassed(r.result) ? "YES" : "NO"}\n- output: ${r.result}`)
+            .map((r) => {
+              const g = parseGateReport(r.result);
+              return `## ${r.stage}\n- role: ${r.role}\n- runtime: ${r.runtime}\n- pass: ${gatePassed(r.result) ? "YES" : "NO"}\n- structured: ${g.structured ? "YES" : "NO"}\n- gate_status: ${g.status || "(missing)"}\n- gate_reason: ${g.reason || "(missing)"}\n- summary: ${g.summary || "(missing)"}\n- next_action: ${g.nextAction || "(missing)"}\n- output: ${r.result}`;
+            })
             .join("\n\n")}`
         },
         {
