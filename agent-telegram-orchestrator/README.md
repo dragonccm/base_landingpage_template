@@ -14,6 +14,7 @@ Hệ thống điều phối nhiều agent thông qua lệnh chat Telegram.
 - `/code:auto`
 - `/cook` (all-in-one -> source project)
 - `/autoflow` (multi-agent pipeline with gate + loop-back)
+- `/ship` (one-shot product command: topic/brief/figma -> pipeline)
 - `/debug`
 - `/code:review`
 - `/watzup`
@@ -22,6 +23,15 @@ Hệ thống điều phối nhiều agent thông qua lệnh chat Telegram.
 ## Kiến trúc runtime
 - **subagent:** docs, requirement, planning, multi-review text-heavy
 - **acp:** coding, test execution, CI/debug log investigation
+
+## Quick start (single command build)
+```bash
+npm run one -- "website chu de AI fintech co blog, seo, contact form"
+```
+
+Optional inputs inside text command:
+- `figma=<url>`
+- `briefFile=<relative-path>`
 
 ## Kit bootstrap (one-command setup)
 ```bash

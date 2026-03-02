@@ -25,7 +25,7 @@ export function buildRoleTask({ role, command, input, projectContext }) {
       : "";
 
   const autoflowTemplate =
-    command === "autoflow"
+    (command === "autoflow" || command === "ship")
       ? "\n\nSTRICT OUTPUT FORMAT (required):\nGATE_STATUS: PASS|FAIL\nGATE_REASON: <short reason>\nSUMMARY: <short summary>\nNEXT_ACTION: <what should happen next>"
       : "";
 

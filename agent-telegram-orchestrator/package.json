@@ -11,6 +11,7 @@
     "worker": "node src/worker.mjs",
     "kit:init": "node scripts/kit-init.mjs",
     "kit:doctor": "node scripts/kit-doctor.mjs",
+    "one": "node scripts/one-command.mjs",
     "kit:preflight": "node scripts/kit-preflight.mjs",
     "kit:pack": "node scripts/kit-pack.mjs"
   }

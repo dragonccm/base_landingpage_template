@@ -62,5 +62,10 @@
     "runtime": "hybrid",
     "roles": ["intake", "planner", "developer", "tester", "security", "devops"],
     "artifacts": ["autoflow-summary.md", "gate-report.md", "release-report.md", "failure-taxonomy.md"]
+  },
+  "ship": {
+    "runtime": "hybrid",
+    "roles": ["intake", "planner", "developer", "tester", "security", "devops"],
+    "artifacts": ["autoflow-summary.md", "gate-report.md", "release-report.md", "failure-taxonomy.md"]
   }
 }

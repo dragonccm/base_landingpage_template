@@ -1,4 +1,4 @@
-import { readdir } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
@@ -168,7 +168,7 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
     };
   }
 
-  if (cmd === "autoflow") {
+  if (cmd === "autoflow" || cmd === "ship") {
     const defaultRetries = autoflowPolicy.defaultRetries || {};
     const maxLoops = Number(input.args.maxLoops || autoflowPolicy.defaultMaxLoops || 2);
     const stageMaxRetries = {
@@ -207,8 +207,23 @@ export async function runWorkflow({ workflow, input, openclaw, projectContext })
       return { ok: false, out: last, attempts: retries + 1 };
     };
 
+    let briefText = "";
+    if (input.args.briefFile) {
+      try {
+        briefText = await readFile(path.resolve(process.cwd(), input.args.briefFile), "utf8");
+      } catch {
+        briefText = "[briefFile read failed]";
+      }
+    }
+
+    const intakeExtra = [
+      input.args.figma ? `Figma: ${input.args.figma}` : "",
+      input.args.contentFile ? `Content file: ${input.args.contentFile}` : "",
+      briefText ? `Brief:\n${briefText}` : ""
+    ].filter(Boolean).join("\n\n");
+
     while (loop <= maxLoops) {
-      const intakeStep = await runStageWithRetry("intake", "intake", "subagent");
+      const intakeStep = await runStageWithRetry("intake", "intake", "subagent", intakeExtra);
       if (!intakeStep.ok) { loop += 1; continue; }
       const intake = intakeStep.out;
 

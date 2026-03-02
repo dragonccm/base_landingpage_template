@@ -27,8 +27,8 @@ export function validateCommandInput(command, { args, freeText }) {
     return "Please provide logs/stacktrace text or log=<...>";
   }
 
-  if (command === "autoflow" && !freeText) {
-    return "Please provide requirement input (example: /autoflow build landing page from template with blog + seo + smtp)";
+  if ((command === "autoflow" || command === "ship") && !freeText) {
+    return "Please provide requirement input (example: /ship website chủ đề fintech có blog và form liên hệ)";
   }
 
   return null;

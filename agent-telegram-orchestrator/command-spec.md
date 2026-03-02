@@ -152,7 +152,18 @@
 
 ---
 
-## 9. /autoflow
+## 9. /ship
+**Mục đích:** one-shot command cho người dùng cuối. Nhận chủ đề/yêu cầu và tự chạy pipeline đa agent.
+
+**Ví dụ:**
+- `/ship website chủ đề bất động sản, có blog và form liên hệ`
+- `/ship landing cho startup AI figma=https://... briefFile=project-brief.md`
+
+**Ghi chú:** `/ship` dùng cùng engine với `/autoflow`, nhưng tối ưu cho trải nghiệm ít lệnh.
+
+---
+
+## 10. /autoflow
 **Mục đích:** chạy pipeline đa agent end-to-end với gate và auto loop-back khi fail.
 
 **Args:**
@@ -174,7 +185,7 @@
 
 ---
 
-## 10. /clear
+## 11. /clear
 **Mục đích:** reset context phiên làm việc.
 
 **Hành vi:**
