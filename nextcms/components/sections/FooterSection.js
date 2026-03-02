@@ -19,7 +19,7 @@ export default function FooterSection({ c, i }) {
         <div><h4>{c.footerCol3Title}</h4><p>{[c.nav1, c.nav2, c.nav3, c.nav4, c.nav5, c.nav6].filter(Boolean).map((x) => <span key={x}>{x}<br /></span>)}</p></div>
         <div><h4>{c.footerCol4Title}</h4><p>{(c.footerCol4Text || "").split("\n").map((x) => <span key={x}>{x}<br /></span>)}</p></div>
       </div>
-      <div className="copy">© 2025 TrustXLabs. All Rights Reserved.</div>
+      <div className="copy">© 2025 <a href="/">{i.siteTitle || "NextCMS"}</a>. All Rights Reserved.</div>
     </footer>
   );
 }

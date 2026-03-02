@@ -168,10 +168,10 @@ input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;
 .blogFilterForm input,.blogFilterForm select{border:1px solid #d4deeb;border-radius:10px;padding:10px 12px;background:#fff;outline:none}
 .blogFilterForm input:focus,.blogFilterForm select:focus{border-color:#2f9ae0;box-shadow:0 0 0 3px rgba(47,154,224,.15)}
 .blogMainGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.blogPostCard{height:440px;display:flex;flex-direction:column;gap:20px;overflow:hidden}
-.blogPostCardImage{width:100%;height:180px;object-fit:cover;border-radius:10px}
-.blogPostCardTitle{margin:0;line-height:1.35}
-.blogPostCardExcerpt{margin:0;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;color:#374151}
+.blogPostCard{height:400px;display:flex;flex-direction:column;gap:20px;overflow:hidden}
+.blogPostCardImage{width:100%;height:170px;object-fit:cover;border-radius:10px}
+.blogPostCardTitle{margin:0;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.blogPostCardExcerpt{margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:#374151}
 .blogPostCardMeta{margin-top:auto;color:#6b7280}
 .blogDetailCard{display:flex;flex-direction:column;gap:20px}
 .blogDetailCard h1,.blogDetailCard p{margin:0}
